@@ -1,857 +1,318 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>كشف العمالة بالمواقع — كونكورد سكاي</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --paper:#FAF8F3;
-    --surface:#FFFFFF;
-    --ink:#1C2B45;
-    --ink-soft:#5B6B85;
-    --hairline:#E5E0D2;
-    --hairline-strong:#D7CFB8;
-    --brass:#A9793C;
-    --brass-deep:#8A5F2A;
-    --brass-tint:#F3E7D2;
-    --teal:#2F6B65;
-    --teal-tint:#E4EFEC;
-    --green:#2F7D5B;
-    --green-tint:#E5F2EA;
-    --amber:#B8862E;
-    --amber-tint:#FBF0DC;
-    --red:#B0442E;
-    --red-tint:#F8E7E1;
-    --gray-tint:#EFEDE6;
-    --shadow: 0 1px 2px rgba(28,43,69,.04), 0 8px 24px -12px rgba(28,43,69,.14);
-  }
-
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:
-      radial-gradient(1200px 600px at 100% -10%, rgba(169,121,60,.06), transparent 60%),
-      var(--paper);
-    color:var(--ink);
-    font-family:'Cairo', sans-serif;
-    font-feature-settings:"tnum" 1;
-    -webkit-font-smoothing:antialiased;
-    min-height:100vh;
-  }
-
-  ::selection{ background:var(--brass-tint); color:var(--brass-deep); }
-
-  /* ===== Header ===== */
-  header.top{
-    padding:38px 5vw 28px;
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:24px;
-    border-bottom:1px solid var(--hairline);
-    background:
-      linear-gradient(180deg, rgba(169,121,60,.05), transparent 70%);
-  }
-  .titleblock .eyebrow{
-    font-family:'Tajawal', sans-serif;
-    font-weight:700;
-    letter-spacing:.14em;
-    font-size:11.5px;
-    color:var(--brass-deep);
-    text-transform:uppercase;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:10px;
-  }
-  .titleblock .eyebrow::before{
-    content:"";
-    width:26px;height:1px;
-    background:var(--brass);
-    display:inline-block;
-  }
-  .titleblock h1{
-    font-family:'Tajawal', sans-serif;
-    font-weight:900;
-    font-size:clamp(26px, 3.4vw, 40px);
-    margin:0 0 8px;
-    color:var(--ink);
-    line-height:1.15;
-  }
-  .titleblock p.sub{
-    margin:0;
-    color:var(--ink-soft);
-    font-size:14.5px;
-    max-width:560px;
-    line-height:1.6;
-  }
-
-  /* signature seal */
-  .seal{
-    flex:none;
-    width:112px; height:112px;
-    position:relative;
-    display:flex; align-items:center; justify-content:center;
-    transform:rotate(-9deg);
-  }
-  .seal svg{ width:100%; height:100%; }
-  .seal .ring-text{ font-family:'Tajawal',sans-serif; }
-
-  /* ===== Layout shell ===== */
-  main{ padding:30px 5vw 70px; }
-
-  /* ===== Stat cards ===== */
-  .stats{
-    display:grid;
-    grid-template-columns:repeat(5, 1fr);
-    gap:14px;
-    margin-bottom:28px;
-  }
-  .stat{
-    background:var(--surface);
-    border:1px solid var(--hairline);
-    border-radius:14px;
-    padding:18px 18px 16px;
-    box-shadow:var(--shadow);
-    position:relative;
-    overflow:hidden;
-  }
-  .stat::after{
-    content:"";
-    position:absolute; inset:0 0 auto 0; height:3px;
-    background:var(--accent, var(--brass));
-  }
-  .stat .num{
-    font-family:'Tajawal',sans-serif;
-    font-weight:900;
-    font-size:30px;
-    color:var(--ink);
-    line-height:1;
-    display:flex;
-    align-items:baseline;
-    gap:4px;
-  }
-  .stat .num span.unit{ font-size:13px; font-weight:700; color:var(--ink-soft); }
-  .stat .label{
-    margin-top:8px;
-    font-size:12.5px;
-    color:var(--ink-soft);
-    font-weight:600;
-  }
-  .stat.expiring{ --accent: var(--amber); }
-  .stat.expired{ --accent: var(--red); }
-  .stat.expiring .num{ color:var(--amber-deep, #96691E); }
-  .stat.expired .num{ color:var(--red); }
-
-  /* ===== Filter bar ===== */
-  .filters{
-    background:var(--surface);
-    border:1px solid var(--hairline);
-    border-radius:16px;
-    box-shadow:var(--shadow);
-    padding:18px 20px;
-    margin-bottom:22px;
-  }
-  .filters .row{
-    display:flex;
-    flex-wrap:wrap;
-    gap:12px;
-    align-items:flex-end;
-  }
-  .field{ display:flex; flex-direction:column; gap:6px; min-width:150px; flex:1 1 150px; }
-  .field label{
-    font-size:11px; font-weight:700; color:var(--ink-soft);
-    text-transform:uppercase; letter-spacing:.06em;
-  }
-  .field select, .field input{
-    font-family:'Cairo', sans-serif;
-    font-size:14px;
-    padding:9px 12px;
-    border:1px solid var(--hairline-strong);
-    border-radius:9px;
-    background:var(--paper);
-    color:var(--ink);
-    outline:none;
-    transition:border-color .15s, box-shadow .15s;
-  }
-  .field select:focus, .field input:focus{
-    border-color:var(--brass);
-    box-shadow:0 0 0 3px var(--brass-tint);
-  }
-  .field.search{ flex:2 1 220px; }
-  .field.search input{ width:100%; }
-  .reset-btn{
-    flex:none;
-    font-family:'Cairo',sans-serif;
-    font-weight:700;
-    font-size:13.5px;
-    color:var(--brass-deep);
-    background:var(--brass-tint);
-    border:1px solid transparent;
-    padding:10px 18px;
-    border-radius:9px;
-    cursor:pointer;
-    transition:background .15s, transform .1s;
-    white-space:nowrap;
-  }
-  .reset-btn:hover{ background:#ecdbb8; }
-  .reset-btn:active{ transform:scale(.97); }
-
-  .chips{
-    display:flex; flex-wrap:wrap; gap:8px;
-    margin-top:14px;
-    min-height:0;
-  }
-  .chip{
-    display:flex; align-items:center; gap:6px;
-    background:var(--teal-tint);
-    color:var(--teal);
-    font-size:12.5px; font-weight:700;
-    padding:5px 10px 5px 6px;
-    border-radius:100px;
-  }
-  .chip button{
-    border:none; background:rgba(47,107,101,.15); color:var(--teal);
-    width:16px; height:16px; border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    cursor:pointer; font-size:11px; line-height:1;
-    padding:0;
-  }
-
-  .result-count{
-    font-size:13px; color:var(--ink-soft); margin:0 2px 12px;
-    font-weight:600;
-  }
-  .result-count b{ color:var(--ink); font-weight:800; }
-
-  /* ===== Profile panel (name search results) ===== */
-  .profile-panel{
-    margin-bottom:22px;
-    display:none;
-  }
-  .profile-panel.show{ display:block; }
-  .profile-panel .heading{
-    display:flex; align-items:center; gap:10px;
-    margin:0 2px 12px;
-    font-family:'Tajawal',sans-serif;
-    font-weight:800;
-    font-size:13.5px;
-    color:var(--brass-deep);
-  }
-  .profile-panel .heading::before{
-    content:"👤";
-    font-size:14px;
-  }
-  .profile-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
-    gap:14px;
-  }
-  .profile-card{
-    background:var(--surface);
-    border:1px solid var(--hairline-strong);
-    border-radius:16px;
-    box-shadow:var(--shadow);
-    padding:18px 20px 16px;
-    position:relative;
-    overflow:hidden;
-  }
-  .profile-card::before{
-    content:"";
-    position:absolute; inset:0 auto 0 0; width:4px;
-    background:var(--brass);
-  }
-  .profile-card.status-expired::before{ background:var(--red); }
-  .profile-card.status-soon::before{ background:var(--amber); }
-  .profile-card.status-active::before{ background:var(--green); }
-  .profile-card .pc-head{
-    display:flex; align-items:flex-start; justify-content:space-between;
-    gap:10px;
-    margin-bottom:14px;
-    padding-bottom:12px;
-    border-bottom:1px dashed var(--hairline-strong);
-  }
-  .profile-card .pc-name{
-    font-family:'Tajawal',sans-serif;
-    font-weight:800;
-    font-size:16.5px;
-    color:var(--ink);
-    line-height:1.3;
-  }
-  .profile-card .pc-civil{
-    font-size:12px; color:var(--ink-soft);
-    direction:ltr; text-align:right;
-    margin-top:3px;
-    font-variant-numeric:tabular-nums;
-  }
-  .profile-fields{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px 16px;
-  }
-  .profile-fields .pf{
-    display:flex; flex-direction:column; gap:2px;
-  }
-  .profile-fields .pf.full{ grid-column:1 / -1; }
-  .profile-fields .pf-label{
-    font-size:10.5px; font-weight:700; color:var(--ink-soft);
-    text-transform:uppercase; letter-spacing:.05em;
-  }
-  .profile-fields .pf-value{
-    font-size:13.5px; font-weight:600; color:var(--ink);
-  }
-  .profile-more{
-    grid-column:1 / -1;
-    text-align:center;
-    font-size:12.5px;
-    color:var(--ink-soft);
-    padding:6px 0 2px;
-  }
-
-  /* ===== Table ===== */
-  .table-wrap{
-    background:var(--surface);
-    border:1px solid var(--hairline);
-    border-radius:16px;
-    box-shadow:var(--shadow);
-    overflow:hidden;
-  }
-  .table-scroll{ overflow-x:auto; max-height:64vh; overflow-y:auto; }
-  table{ width:100%; border-collapse:collapse; font-size:13.5px; min-width:980px; }
-  thead th{
-    position:sticky; top:0; z-index:2;
-    background:#F4EEE0;
-    color:var(--brass-deep);
-    text-align:right;
-    font-family:'Tajawal',sans-serif;
-    font-weight:700;
-    font-size:12px;
-    letter-spacing:.03em;
-    padding:13px 14px;
-    border-bottom:1px solid var(--hairline-strong);
-    cursor:pointer;
-    user-select:none;
-    white-space:nowrap;
-  }
-  thead th:hover{ background:#EFE6D0; }
-  thead th .arrow{ opacity:0; font-size:10px; margin-inline-start:4px; }
-  thead th.sorted .arrow{ opacity:1; }
-  tbody tr{ border-bottom:1px solid var(--hairline); transition:background .12s; }
-  tbody tr:hover{ background:#FBF7EE; }
-  tbody tr:last-child{ border-bottom:none; }
-  tbody td{ padding:11px 14px; color:var(--ink); white-space:nowrap; }
-  td.name{ font-weight:700; white-space:normal; min-width:170px; }
-  td.civil{ font-variant-numeric:tabular-nums; color:var(--ink-soft); direction:ltr; text-align:right; }
-  td.center{ text-align:center; }
-
-  .badge{
-    display:inline-flex; align-items:center; gap:6px;
-    font-size:11.5px; font-weight:700;
-    padding:5px 11px;
-    border-radius:100px;
-    white-space:nowrap;
-  }
-  .badge::before{ content:""; width:6px; height:6px; border-radius:50%; background:currentColor; }
-  .badge.active{ background:var(--green-tint); color:var(--green); }
-  .badge.soon{ background:var(--amber-tint); color:var(--amber); }
-  .badge.expired{ background:var(--red-tint); color:var(--red); }
-  .badge.unknown{ background:var(--gray-tint); color:var(--ink-soft); }
-
-  .empty-state{
-    padding:70px 20px; text-align:center; color:var(--ink-soft);
-  }
-  .empty-state .icon{ font-size:34px; margin-bottom:10px; }
-  .empty-state p{ margin:4px 0 0; font-size:14px; }
-
-  footer{
-    margin-top:26px;
-    text-align:center;
-    color:var(--ink-soft);
-    font-size:12px;
-    line-height:1.8;
-  }
-
-  @media (max-width: 900px){
-    .stats{ grid-template-columns:repeat(2,1fr); }
-    header.top{ flex-direction:column; }
-    .seal{ align-self:flex-end; margin-top:-10px; }
-  }
-  @media (prefers-reduced-motion: reduce){
-    *{ transition:none !important; }
-  }
-
-  /* ===== Password gate ===== */
-  #gate{
-    position:fixed; inset:0; z-index:100;
-    display:flex; align-items:center; justify-content:center;
-    background:
-      radial-gradient(1200px 600px at 100% -10%, rgba(169,121,60,.08), transparent 60%),
-      var(--paper);
-    padding:20px;
-  }
-  #gate .gate-card{
-    background:var(--surface);
-    border:1px solid var(--hairline-strong);
-    border-radius:18px;
-    box-shadow:var(--shadow);
-    padding:36px 32px 30px;
-    width:100%; max-width:380px;
-    text-align:center;
-  }
-  #gate .gate-seal{
-    width:64px; height:64px; margin:0 auto 16px;
-    border:1.4px dashed var(--brass);
-    border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Tajawal',sans-serif; font-weight:900; font-size:18px;
-    color:var(--brass-deep);
-  }
-  #gate h2{
-    font-family:'Tajawal',sans-serif; font-weight:800; font-size:19px;
-    margin:0 0 8px; color:var(--ink);
-  }
-  #gate p{ font-size:13px; color:var(--ink-soft); margin:0 0 20px; line-height:1.6; }
-  #gate input{
-    width:100%; font-family:'Cairo',sans-serif; font-size:15px;
-    padding:11px 14px; border:1px solid var(--hairline-strong);
-    border-radius:10px; background:var(--paper); color:var(--ink);
-    outline:none; text-align:center; letter-spacing:.08em;
-    margin-bottom:12px;
-  }
-  #gate input:focus{ border-color:var(--brass); box-shadow:0 0 0 3px var(--brass-tint); }
-  #gate button{
-    width:100%; font-family:'Cairo',sans-serif; font-weight:700; font-size:14.5px;
-    padding:11px; border:none; border-radius:10px; cursor:pointer;
-    background:var(--brass); color:#fff;
-    transition:background .15s, transform .1s;
-  }
-  #gate button:hover{ background:var(--brass-deep); }
-  #gate button:active{ transform:scale(.98); }
-  #gate .gate-error{
-    color:var(--red); font-size:12.5px; font-weight:700;
-    margin-top:10px; min-height:16px;
-  }
-  #app-content{ display:none; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concord Sky Dashboard | لوحة تحكم كونكورد</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Cairo) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-gray-50 text-gray-800 antialiased min-h-screen flex flex-col md:flex-row">
 
-<div id="gate">
-  <div class="gate-card">
-    <div class="gate-seal">CS</div>
-    <h2>كونكورد سكاي</h2>
-    <p>أهلاً بك في كشف العمالة بالمواقع. أدخل كلمة المرور للمتابعة إلى بيانات فريقنا.</p>
-    <input id="gate-input" type="password" placeholder="كلمة المرور" autocomplete="off">
-    <button id="gate-btn">دخول</button>
-    <div class="gate-error" id="gate-error"></div>
-  </div>
-</div>
-
-<div id="app-content">
-
-<header class="top">
-  <div class="titleblock">
-    <div class="eyebrow">سجل تراخيص العمل والإقامة</div>
-    <h1>كشف العمالة بالمواقع</h1>
-    <p class="sub">كونكورد سكاي — رصد تصاريح العمل حسب الموقع والعقد والجنسية، مع تتبّع تواريخ الانتهاء والمتابعة الدورية.</p>
-  </div>
-  <div class="seal" aria-hidden="true">
-    <svg viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r="56" fill="none" stroke="#A9793C" stroke-width="1.4" stroke-dasharray="2 4"/>
-      <circle cx="60" cy="60" r="47" fill="none" stroke="#A9793C" stroke-width="1"/>
-      <path id="ringPath" d="M 60,60 m -38,0 a 38,38 0 1,1 76,0 a 38,38 0 1,1 -76,0" fill="none"/>
-      <text font-size="9.3" fill="#8A5F2A" letter-spacing="2" class="ring-text">
-        <textPath href="#ringPath" startOffset="2%">تتبّع · دقّة · امتثال · متابعة ·</textPath>
-      </text>
-      <text x="60" y="56" text-anchor="middle" font-size="20" fill="#8A5F2A" font-family="Tajawal" font-weight="900">CS</text>
-      <text x="60" y="72" text-anchor="middle" font-size="7.5" fill="#8A5F2A" font-family="Tajawal" font-weight="700" letter-spacing="1">2026</text>
-    </svg>
-  </div>
-</header>
-
-<main>
-  <section class="stats" id="stats"></section>
-
-  <section class="filters">
-    <div class="row">
-      <div class="field search">
-        <label for="f-search">بحث بالاسم أو الرقم المدني</label>
-        <input id="f-search" type="text" placeholder="اكتب اسم العامل أو الرقم المدني…" autocomplete="off">
-      </div>
-      <div class="field">
-        <label for="f-site">الموقع</label>
-        <select id="f-site"><option value="">كل المواقع</option></select>
-      </div>
-      <div class="field">
-        <label for="f-contract">نوع العقد</label>
-        <select id="f-contract"><option value="">كل العقود</option></select>
-      </div>
-      <div class="field">
-        <label for="f-nat">الجنسية</label>
-        <select id="f-nat"><option value="">كل الجنسيات</option></select>
-      </div>
-      <div class="field">
-        <label for="f-job">المهنة</label>
-        <select id="f-job"><option value="">كل المهن</option></select>
-      </div>
-      <div class="field">
-        <label for="f-status">حالة التصريح</label>
-        <select id="f-status">
-          <option value="">كل الحالات</option>
-          <option value="active">سارٍ</option>
-          <option value="soon">قريب الانتهاء (٦٠ يوم)</option>
-          <option value="expired">منتهٍ</option>
-          <option value="unknown">غير محدد</option>
-        </select>
-      </div>
-      <button class="reset-btn" id="reset-btn">إعادة تعيين الفلاتر</button>
-    </div>
-    <div class="chips" id="chips"></div>
-  </section>
-
-  <section class="profile-panel" id="profile-panel">
-    <p class="heading">كل البيانات المتعلقة بهذا الاسم</p>
-    <div class="profile-grid" id="profile-grid"></div>
-  </section>
-
-  <p class="result-count" id="result-count"></p>
-
-  <div class="table-wrap">
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th data-key="idx">م<span class="arrow">▾</span></th>
-            <th data-key="name">الاسم<span class="arrow">▾</span></th>
-            <th data-key="civil_id">الرقم المدني<span class="arrow">▾</span></th>
-            <th data-key="job">المهنة<span class="arrow">▾</span></th>
-            <th data-key="nationality">الجنسية<span class="arrow">▾</span></th>
-            <th data-key="contract">نوع العقد<span class="arrow">▾</span></th>
-            <th data-key="site">الموقع<span class="arrow">▾</span></th>
-            <th data-key="permit_issue">تاريخ الإصدار<span class="arrow">▾</span></th>
-            <th data-key="permit_expiry">تاريخ الانتهاء<span class="arrow">▾</span></th>
-            <th data-key="status" class="center">الحالة<span class="arrow">▾</span></th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
-    <div class="empty-state" id="empty-state" style="display:none;">
-      <div class="icon">🗂️</div>
-      <p>لا توجد نتائج مطابقة لعوامل التصفية الحالية.</p>
-    </div>
-  </div>
-
-  <footer>
-    مصدر البيانات: ملف "CONCORDKW — كشف بالمواقع" · إجمالي السجلات المستخرجة عبر ٤ كشوف (الإطفاء، الملف الرئيسي/الفرع، الرعاية مراسلين، الرعاية نظافة) · حالة التصريح محسوبة تلقائيًا وفق تاريخ اليوم
-  </footer>
-</main>
-
-</div>
-
-<script id="data-json" type="application/json">[{"civil_id": 302040601963, "name": "ناهيد حسن ام دي جمال بهويان", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": "فيزة", "site": "نادي السيارات", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 298020303812, "name": "ريدوي هولادر جهانجير هولادر", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-03-28", "permit_expiry": "2025-03-27", "nationality": "بنجلاديش", "source": "2023-02-01", "site": "بلاغ تغيب", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 289040308691, "name": "محي الدين هولادر ام دي راسيد هولادر", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-11", "permit_expiry": "2026-05-10", "nationality": "بنجلاديش", "source": "فيزة", "site": "تنظيف منازل", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 291033005361, "name": "ام دي نايبعلي ام دي ايام الدي مولا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-18", "permit_expiry": "2026-05-17", "nationality": "بنجلاديش", "source": "فيزة", "site": "تنظيف منازل", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 296032005127, "name": "نيلام شريستا دونج", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": "فيزة", "site": "مستوصف", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300011702731, "name": "نيرمايا تامانج", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": "فيزة", "site": "مستوصف", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 292082007755, "name": "رادها كومال", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": "فيزة", "site": "مستوصف", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 297012004826, "name": "اشا تامانج", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": "فيزة", "site": "مستوصف", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 292092008815, "name": "هيرا كوماري لاما كاركي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": "فيزة", "site": "مستوصف", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 296122903203, "name": "سارميلا تيمالسينا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": "فيزة", "site": "مستوصف", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 294050807001, "name": "كمالا ليمبو", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": "فيزة", "site": "مستوصف", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 296042703877, "name": "مانيشا ليمبو", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": "فيزة", "site": "مستوصف", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 297112003564, "name": "اني جابيجو", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": "فيزة", "site": "مستوصف", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 291112105475, "name": "تك مايا بكامي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": "فيزة", "site": "مستوصف", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 301072402235, "name": "باتالي جول", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": "فيزة", "site": "مستوصف", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 287091708303, "name": "لكمايا سيانجتان", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": "فيزة", "site": "مستوصف", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 293042903955, "name": "شوسما شولاجا راي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": "فيزة", "site": "مستوصف", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 298060603801, "name": "ناميتا راي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": "فيزة", "site": "مستوصف", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 289100303746, "name": "سوشيل كومر راج كيشور", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 279021009216, "name": "بابول بوريش", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 273021205754, "name": "مانيك مياه داليل الدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 287072405091, "name": "ام دي شاخاوات حسين ام دي مقصيد علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 278021009449, "name": "كمال حسين منصور على", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 280040116699, "name": "ابوالبشر كوندوكار عبدالقادر", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 274101205644, "name": "ليتون عبدالكريم هولادر", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 271020110033, "name": "منير حسين عبد المزيد", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-26", "permit_expiry": "2026-01-25", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 277122008491, "name": "ام دي الامجير", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-27", "permit_expiry": "2026-01-26", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 280102005821, "name": "ابوالكلام عزاد دودو موندال", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-26", "permit_expiry": "2026-01-25", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 279020111155, "name": "حسن بادشا مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-26", "permit_expiry": "2026-01-25", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 270050504477, "name": "ريتا أبو سيد", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-26", "permit_expiry": "2026-01-25", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 282010137105, "name": "ستار رازاب على غازى", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-26", "permit_expiry": "2026-01-25", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 267050201954, "name": "محمد شاهجهان سراج محمد كفل الدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-28", "permit_expiry": "2026-01-27", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300040902433, "name": "دولال هولادر ابو سلام هولادر", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-27", "permit_expiry": "2026-04-26", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 299041802893, "name": "محمد مامون شفيق الرحمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-29", "permit_expiry": "2026-04-28", "nationality": "بنجلاديش", "source": "2023-02-23", "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 297061007396, "name": "ام دي الياس ام دي ممتاز الدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-11", "permit_expiry": "2026-05-10", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 296032803882, "name": "ام دي عرفان كاجل ميا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 298072004419, "name": "عمر فاروق فضل الحق", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 292011012151, "name": "ام دي طارق اسلام ام دي اوفيز علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-18", "permit_expiry": "2026-05-17", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 297010158645, "name": "ام دي رياض عبد الودود", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-18", "permit_expiry": "2026-05-17", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 301010123468, "name": "ام دي تاهيدول اسلام محمد", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-25", "permit_expiry": "2026-05-24", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 299032002966, "name": "ام دي اشرف الاسلام ام دي مجيبول اسلام", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-02", "permit_expiry": "2026-06-01", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300061003277, "name": "محمد عبد الله عبد اللطيف", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-02", "permit_expiry": "2026-06-01", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 299011503278, "name": "ام دي كوسور ام دي مصلح الدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 299031003457, "name": "اوريش مولا ام دي محسن مولا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300100104303, "name": "ام دي اخلاص الرحمن ام دي رفيقول اسلام", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": null, "site": "مطافي", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 276021106047, "name": "مرشد موفيز الله", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 288112012095, "name": "ام دي سوهاج حسين ام دي موفيظ الله", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 291070208467, "name": "ماماتا خاطري", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": null, "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 275031010589, "name": "هارون نورول اسلام", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 293010155315, "name": "سونا مياه عبدالستار", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 292081206496, "name": "سابيترا شريستا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": null, "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 271030211305, "name": "كاجل مياه محمد على", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "اجازة -", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 297031403021, "name": "نيرمالا ليمبو شيربا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": null, "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300011902899, "name": "ريمون مياه عبد الاحد", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-03-27", "permit_expiry": "2026-03-26", "nationality": "بنجلاديش", "source": null, "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 301123101783, "name": "ماسود رانا ام دي محروس ميا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-27", "permit_expiry": "2026-04-26", "nationality": "بنجلاديش", "source": "2023-02-22", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 297040303487, "name": "ام دي ساويت علي ام دي ساجد الرحمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-27", "permit_expiry": "2026-04-26", "nationality": "بنجلاديش", "source": "2023-02-22", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300072702639, "name": "ام دي عثمان غني ساهيد مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-27", "permit_expiry": "2026-04-26", "nationality": "بنجلاديش", "source": "2023-02-22", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 293061105019, "name": "علمجير اسلام ام دي تيسير الدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-27", "permit_expiry": "2026-04-26", "nationality": "بنجلاديش", "source": "2023-02-23", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 301092202361, "name": "ام دي اسماعيل حسين ابو يوسف", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-27", "permit_expiry": "2026-04-26", "nationality": "بنجلاديش", "source": "2023-02-22", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 301051801886, "name": "شيخ راتول نور علم", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-27", "permit_expiry": "2026-04-26", "nationality": "بنجلاديش", "source": "2023-02-23", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300071702573, "name": "رقيب حسين دولو شرف الله", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-27", "permit_expiry": "2026-04-26", "nationality": "بنجلاديش", "source": "2023-02-23", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300010132845, "name": "نور علم عبد الستار", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-27", "permit_expiry": "2026-04-26", "nationality": "بنجلاديش", "source": "2023-02-23", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 301021502447, "name": "فيصل احمد محمد بلال", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-27", "permit_expiry": "2026-04-26", "nationality": "بنجلاديش", "source": "2023-02-22", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 293040112009, "name": "محمد رياض الدين محمد وازوالدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-28", "permit_expiry": "2026-04-27", "nationality": "بنجلاديش", "source": "2023-02-23", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 293101506678, "name": "ام دي راجيب حسين عبد الرحيم", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 290111406714, "name": "خير الاسلام عبد الباطن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 299030104352, "name": "جمال الدين عبد اللطيف", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 288021907133, "name": "ام دي سلطان حسين ام دي كوسر علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 290121805903, "name": "ام دي سازاد حسين ام دي ابو البشر", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 299111901986, "name": "فاجل ربيع راتول شهادات حسين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 299110502246, "name": "ام دي شمس العلم شهيد الله", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 299080302613, "name": "ام دي سوهان ام دي نور و حسين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300121802266, "name": "رحيم مياه شاهجهان مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 301021502471, "name": "ام دي جابيد ام دي ابو الكلام", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 299123103818, "name": "ام دي امينول اسلام كلام بك", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 297062004293, "name": "ام دي جبير ام دي محمود علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 292081705383, "name": "عارف الاسلام مستافيجور رحمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-11", "permit_expiry": "2026-05-10", "nationality": "بنجلاديش", "source": "2023-02-20", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300010132669, "name": "شهادات حسين ام دي رفيقول اسلام", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-12", "permit_expiry": "2026-05-11", "nationality": "بنجلاديش", "source": "2023-02-01", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 295122803734, "name": "حبيب الرحمن عمر علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-18", "permit_expiry": "2026-05-17", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300101002878, "name": "اكاش ميا ام دي بادرول", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-18", "permit_expiry": "2026-05-17", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 291121605607, "name": "الامين مختار الدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-18", "permit_expiry": "2026-05-17", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 289040209482, "name": "محمد عثمان ام دي الطاب حسين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-18", "permit_expiry": "2026-05-17", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300071302377, "name": "سيفول اسلام تازمول شوهل", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-18", "permit_expiry": "2026-05-17", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300093002447, "name": "شوحل حارس مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-02", "permit_expiry": "2026-06-01", "nationality": "بنجلاديش", "source": "2022-12-21", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300111002302, "name": "شاه علم لاكوت", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-02", "permit_expiry": "2026-06-01", "nationality": "بنجلاديش", "source": "2022-12-21", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 286081210005, "name": "هارون برامانيك موتي برومانيك", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-02", "permit_expiry": "2026-06-01", "nationality": "بنجلاديش", "source": "2022-12-21", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300011004132, "name": "يامن حسن ام دي مصطفي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-02", "permit_expiry": "2026-06-01", "nationality": "بنجلاديش", "source": "2023-01-31", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 299080902651, "name": "ام دي كبير حسين روب مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-02", "permit_expiry": "2026-06-01", "nationality": "بنجلاديش", "source": "2022-12-21", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 294031009573, "name": "محمد ساميم احسن الله بيدا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-02", "permit_expiry": "2026-06-01", "nationality": "بنجلاديش", "source": "2022-12-21", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300061702502, "name": "سبوج حسين عبد اللطيف", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": "2023-02-06", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 301031102471, "name": "شيخ رومان شيخ رحيم", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": "2023-02-06", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300022602111, "name": "ام دي رقيب مهاكي رفيق مهاكي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": "2023-02-06", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300042902402, "name": "ام دي نعمت الله ام دي سمش الحق", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": "2023-01-31", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 300041802434, "name": "ام دي شيفو ام دي ابراهيم برامانيك", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": "2023-02-01", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 299010131951, "name": "محمد ديلوار حسين مارفات مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": "2023-02-01", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 293101206368, "name": "ام دي روني موندول ام دي نبي موندول", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": "2023-02-01", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 294123107752, "name": "ام دي مطالب ام دي رفيقول اسلام مولا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": "2023-02-22", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 301051801771, "name": "فيصل احمد روبشان مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": "2022-12-21", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 296010184638, "name": "ام دي روبل ام دي سلطان هولادر", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": "2022-12-21", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 301120102529, "name": "ام دي زاهيد حسن ام دي ابوبكرالصديق", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": "2023-01-31", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 295102005145, "name": "ام دي جبير ساردار ام دي بابول حسي ساردار", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": "2022-12-22", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 292100205756, "name": "محمد ريبون ام دي جمال", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": "2023-02-06", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 298072004419, "name": "عمر فاروق فضل الحق", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": "2023-03-08", "site": "الرعاية", "contract": "عقد قوة الإطفاء العام"}, {"civil_id": 286082003673, "name": "ايناس محمد رشاد بركه", "job": "مدير ادارى", "permit_issue": "2023-08-03", "permit_expiry": "2026-08-02", "nationality": "مصر", "source": null, "site": "ادارة الجابرية", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 288042604975, "name": "محمود خليفه احمد حسانين", "job": "سائق مركبه خفيفه", "permit_issue": "2024-03-25", "permit_expiry": "2026-03-24", "nationality": "مصر", "source": null, "site": "الادارة", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 275050508796, "name": "عبدالاول مفيزالدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-12", "permit_expiry": "2025-08-11", "nationality": "بنجلاديش", "source": null, "site": "صناعة الكيماويات", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 291082704556, "name": "أبو جعفر أبو الكلام صالح", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-19", "permit_expiry": "2025-08-18", "nationality": "بنجلاديش", "source": null, "site": "مركز الصياد الطبي", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 296101902076, "name": "محمد راسيل ماجومدر ام دي شاحب علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-19", "permit_expiry": "2025-08-18", "nationality": "بنجلاديش", "source": null, "site": "صناعة الكيماويات", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 282062006094, "name": "فريد مياه نور الاسلام", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-09-03", "permit_expiry": "2025-09-02", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 295100302592, "name": "اخلاس ودين ام دي حضرت", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-09-03", "permit_expiry": "2025-09-02", "nationality": "بنجلاديش", "source": null, "site": "البترول الكويتية العالمية", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 294020108349, "name": "سيفول اسلام سهيد", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-09-03", "permit_expiry": "2025-09-02", "nationality": "بنجلاديش", "source": null, "site": "صناعة الكيماويات", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 295010204534, "name": "محمد ركيب بهار ودين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-09-03", "permit_expiry": "2025-09-02", "nationality": "بنجلاديش", "source": null, "site": "البترول الكويتية العالمية", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 292010305251, "name": "منير امديشكور علي حسين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-09-03", "permit_expiry": "2025-09-02", "nationality": "بنجلاديش", "source": null, "site": "شركة الديار", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 295010141086, "name": "محمدماكسودور محمد عبدولمالك رحمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-09-18", "permit_expiry": "2025-09-17", "nationality": "بنجلاديش", "source": null, "site": "مكتب الجابرية", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 278010504196, "name": "جيبون احمد صادق واريس", "job": "مراسل", "permit_issue": "2024-09-18", "permit_expiry": "2025-09-17", "nationality": "بنجلاديش", "source": null, "site": "خارج البلاد", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 286091009321, "name": "مفيض مزمل مزمل", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 278112206691, "name": "ام دي جياور رحمن ام دي حسن علي مولا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "البترول الكويتية العالمية", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 295030104952, "name": "مسعود شان ميه بيبارى بيباري", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "البترول الكويتية العالمية", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 284101013983, "name": "فريد مياه مرشيد مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 282080112392, "name": "ميزانور عبدالملك رحمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 293070604493, "name": "محمد سهيل محمد صديق رحمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 278041307048, "name": "نبيل حسن نور الدين حفنى", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "مصر", "source": null, "site": "دار الزنكى", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 287050310454, "name": "محمدماجبا محمدكوبات احمد دين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "انتظار تحويل اقامة", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 292081506675, "name": "مهدي حسن جوينال مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 295041203323, "name": "روح الامين فايز مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "البترول الكويتية العالمية", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 295091502997, "name": "مانيك ميا امدي بادشا ميا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مركز اكتف الطبي", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 295011005182, "name": "محمد شاكيل مياه ام دي ابراهيم", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "سائق شفتات", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 274123105185, "name": "روح الأمين أوهيدالرحمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 288070513069, "name": "ام دي مكول حسين ام دي عبدالستار", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مركز اكتف الطبي", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 282010214457, "name": "خسرول احمد ام دي ابوالحشين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية نظافة", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 284100306995, "name": "محمد على كيسمات على", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مركز الصياد الطبي", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 282041907272, "name": "سوبدول هاسين علي سوردار", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 269060209502, "name": "انور حسين عبد المؤمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-28", "permit_expiry": "2026-01-27", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 296052805041, "name": "علي الأحمد", "job": "سائق / سيارة خصوصي", "permit_issue": "2025-01-28", "permit_expiry": "2026-01-27", "nationality": "تركيا", "source": null, "site": "الادارة", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 279052008021, "name": "كبير حسين مسلم مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-28", "permit_expiry": "2026-01-27", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 267051505167, "name": "سوبان عبدول كاشم", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-28", "permit_expiry": "2026-01-27", "nationality": "بنجلاديش", "source": null, "site": "النادي الدولى للسيارات", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 285021010955, "name": "محمد امدادالله عبدالرشيد", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-03-16", "permit_expiry": "2026-03-15", "nationality": "بنجلاديش", "source": null, "site": "صناعة الكيماويات", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 290041009595, "name": "محمد انوار حسين ابوالقاشم", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-03-17", "permit_expiry": "2026-03-16", "nationality": "بنجلاديش", "source": null, "site": "سكن العمال", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 280070608723, "name": "ام دي مظهار اسان علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-03-17", "permit_expiry": "2026-03-16", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية نظافة", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 285011513305, "name": "امينول حق عبدول بارك", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-03-17", "permit_expiry": "2026-03-16", "nationality": "بنجلاديش", "source": null, "site": "شركة الديار", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 286072010116, "name": "محمود ابراهيم محمد عبدالقادر", "job": "سائق / حافلة", "permit_issue": "2025-03-27", "permit_expiry": "2026-03-26", "nationality": "مصر", "source": null, "site": "مندوب + سائق", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 283030117413, "name": "سراج الحق حق شمسول حق", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-27", "permit_expiry": "2026-04-26", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية نظافة", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 294042004751, "name": "شانتو مياه بادشا مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-27", "permit_expiry": "2026-04-26", "nationality": "بنجلاديش", "source": null, "site": "خارج البلاد", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 275011208248, "name": "هومايون كبير باسير الدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-29", "permit_expiry": "2026-04-28", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 292052006823, "name": "علاءالدين اشاق", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-29", "permit_expiry": "2026-04-28", "nationality": "بنجلاديش", "source": null, "site": "شركة الديار", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 294060903136, "name": "ياسين عبدالخالق", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-29", "permit_expiry": "2026-04-28", "nationality": "بنجلاديش", "source": null, "site": "النادي الدولى للسيارات", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 294010156486, "name": "عبدالحنان عبد الرزاك", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-29", "permit_expiry": "2026-04-28", "nationality": "بنجلاديش", "source": null, "site": "خارج البلاد", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 277030117228, "name": "ابول خير يونس مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-03", "permit_expiry": "2026-05-02", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 285101106949, "name": "عزيزالرحمن محمد علي موليك", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-12", "permit_expiry": "2026-05-11", "nationality": "بنجلاديش", "source": null, "site": "مركز اكتف الطبي", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 291021008135, "name": "ام دي راشيد اسلام ام دي ارودين موندول", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-12", "permit_expiry": "2026-05-11", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 275010196927, "name": "ادريس كهان جوينال كهان", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-12", "permit_expiry": "2026-05-11", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 294042004655, "name": "فاروق دليل شيولي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-13", "permit_expiry": "2026-05-12", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 272080702764, "name": "فاروق مياه انيس الرحمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-18", "permit_expiry": "2026-05-17", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 294071505088, "name": "سبوج ميا اسيرودين مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-20", "permit_expiry": "2026-05-19", "nationality": "بنجلاديش", "source": null, "site": "خارج البلاد", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 287042805705, "name": "حسين نورالدين عبدالجواد حسن", "job": "مراسل", "permit_issue": "2025-05-28", "permit_expiry": "2026-05-27", "nationality": "مصر", "source": null, "site": "حارس منزل ابو فهد", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 289112106272, "name": "صالح احمد راجو ام دي جلال مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-02", "permit_expiry": "2026-06-01", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 290010177828, "name": "محمد سومون احمد محمد والي مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 281061023074, "name": "شوحل رانا ابول حسين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 290010177246, "name": "ام دي وظل حسين ام دي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية نظافة", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 288061516604, "name": "سومون سراج الاسلام", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية نظافة", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 295010303487, "name": "ام دي هومايون مياام دي ماجلو ميا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 294050203953, "name": "ام دي محين ودين ام دي ابوطاهر", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 284121208382, "name": "أم دي مرتضى أم دي كوثر علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "شركة الديار", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 284031511425, "name": "ديلورا كلامدار مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 297021002961, "name": "حسين سيد احمد عبدالعزيز", "job": "مراسل", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "مصر", "source": null, "site": "جمعية اشبيلية", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 293021504381, "name": "احمد محمود حمدي محمود", "job": "سائق / شاحنة", "permit_issue": "2025-07-06", "permit_expiry": "2026-07-05", "nationality": "مصر", "source": null, "site": "سائق شفتات", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 282041706868, "name": "حسام محمد محمود محمد", "job": "مراسل", "permit_issue": "2025-07-06", "permit_expiry": "2026-07-05", "nationality": "مصر", "source": null, "site": "الرعاية السكنية مراسل", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 289041807396, "name": "سيف الاسلام شان مامود", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مركز الصياد الطبي", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 292081506595, "name": "ابول خير عبدالرشيد", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "خارج البلاد", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 291122004862, "name": "ام دي سومون ميا ام دي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مركز الصياد الطبي", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 285071013839, "name": "همايت حسين سبور بهلا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "تنظيف منازل", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 292020112031, "name": "جهير حسين صاحب علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "خارج البلاد", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 279020114196, "name": "محمد هارون الرشيد مقصد على", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 292030604275, "name": "محمد عبدالمياه محمد مفيج مياه", "job": "مراسل", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "الملف الرئيسي / الفرع"}, {"civil_id": 295040104446, "name": "منيرول اسلام محاب الرحمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-03-19", "permit_expiry": "2025-03-18", "nationality": "بنجلاديش", "source": null, "site": "بلاغ تغيب", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 302031302056, "name": "جاميلى تامانج مانجاجى", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-11-05", "permit_expiry": "2025-11-04", "nationality": "نيبال", "source": null, "site": "الرعاية السكنية نظافة", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 301112702604, "name": "مانيشا نيبالي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-11-05", "permit_expiry": "2025-11-04", "nationality": "نيبال", "source": null, "site": "الرعاية السكنية نظافة", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 297082604085, "name": "بارباتي سيتولا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-11-05", "permit_expiry": "2025-11-04", "nationality": "نيبال", "source": null, "site": "الرعاية السكنية نظافة", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 299022503417, "name": "سوميتا براجا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-11-05", "permit_expiry": "2025-11-04", "nationality": "نيبال", "source": null, "site": "الرعاية السكنية نظافة", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 299071303665, "name": "اورميلا تامانج", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-11-05", "permit_expiry": "2025-11-04", "nationality": "نيبال", "source": null, "site": "الرعاية السكنية نظافة", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 292100504844, "name": "محمد عبدالاحد ارجوت الله", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مركز اكتف الطبي", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 291091006848, "name": "محمدفردوس حسين سوروج ميا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 293121203826, "name": "هريدوي احمد صلاودين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 288020210887, "name": "شاهين مياه نورالدين خا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 287010181678, "name": "هوماين نوروز جمان", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 283010197911, "name": "محمد موهان محمد خليل", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية نظافة", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 272101207843, "name": "ام دي عبدالمنان ام دي جوينال", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 293040108325, "name": "ام دي بابول اسلام ام دي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 287052907983, "name": "سوشيلا ناربهادور تامانج", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مركز النهيل الطبي", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 288121014367, "name": "ابو زافر ابو الكلام", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 280032012363, "name": "محمد حسن على اسراف", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 272070510929, "name": "ام دى انامول الحق لاتى تفير الدين ساركار", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 285081208656, "name": "عبدالحميد ميزي هاسم", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-27", "permit_expiry": "2026-01-26", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 289090604253, "name": "ظافر شيرازالحق", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-27", "permit_expiry": "2026-01-26", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 286103003876, "name": "لورليني بيوجالانسي مانايج", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-27", "permit_expiry": "2026-01-26", "nationality": "بنجلاديش", "source": null, "site": "مركز اكتف الطبي", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 296050503189, "name": "ام دي عزيز الحق ام دي عبدالغفور", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-27", "permit_expiry": "2026-01-26", "nationality": "بنجلاديش", "source": null, "site": "شركة الديار", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 283110406303, "name": "تاراديفي موجراتي ساركيني", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-27", "permit_expiry": "2026-01-26", "nationality": "بنجلاديش", "source": null, "site": "مركز اكتف الطبي", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 279010192924, "name": "ام دي سينتو مياه ام دي عبدالحق", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-02-19", "permit_expiry": "2026-02-18", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 290090802418, "name": "محمد عربي عليو غازي", "job": "مراسل", "permit_issue": "2025-02-20", "permit_expiry": "2026-02-19", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 290010177852, "name": "عبدالعزيز جوينال عابدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-03-10", "permit_expiry": "2026-03-09", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 289111006616, "name": "قياس الدين شمس الحق", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-03-16", "permit_expiry": "2026-03-15", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 289042008211, "name": "سليمان سيد علي", "job": "سائق / حافلة", "permit_issue": "2025-03-17", "permit_expiry": "2026-03-16", "nationality": "بنجلاديش", "source": null, "site": "اجازة خارج البلاد", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 280020125117, "name": "ابوطالب عبدالمالك", "job": "سائق / حافلة", "permit_issue": "2025-03-17", "permit_expiry": "2026-03-16", "nationality": "بنجلاديش", "source": null, "site": "سائق شفتات", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 288062013013, "name": "ام دي موراد حسين ام دي سخاواي", "job": "سائق / سيارة خصوصي", "permit_issue": "2025-03-17", "permit_expiry": "2026-03-16", "nationality": "بنجلاديش", "source": null, "site": "اجازة خارج البلاد", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 287010179957, "name": "جاهيدول حق عبدالحق", "job": "سائق / شاحنة", "permit_issue": "2025-03-17", "permit_expiry": "2026-03-16", "nationality": "بنجلاديش", "source": null, "site": "اجازة خارج البلاد", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 286033005939, "name": "حسين محمد العربي حسين", "job": "مراسل", "permit_issue": "2025-03-17", "permit_expiry": "2026-03-16", "nationality": "بنجلاديش", "source": null, "site": "جمعية اشبيلية", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 280080111905, "name": "اوال خان عبدالرشيد خان", "job": "سائق / شاحنة", "permit_issue": "2025-03-17", "permit_expiry": "2026-03-16", "nationality": "بنجلاديش", "source": null, "site": "سائق شفتات", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 282060516429, "name": "منظرول اسلام رازا", "job": "سائق / حافلة", "permit_issue": "2025-03-17", "permit_expiry": "2026-03-16", "nationality": "بنجلاديش", "source": null, "site": "سائق شفتات", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 277111606103, "name": "ام دي شاكيل ساردار ليت ماجد ساردار", "job": "سائق / حافلة", "permit_issue": "2025-03-17", "permit_expiry": "2026-03-16", "nationality": "بنجلاديش", "source": null, "site": "سائق شفتات", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 285092907815, "name": "محمد عبدالحفيظ البدري السيد", "job": "مشرف منشأة تنظيف المباني", "permit_issue": "2025-03-27", "permit_expiry": "2026-03-26", "nationality": "مصر", "source": null, "site": "مشرف عقد البترول الكويتية", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 282030118008, "name": "محمد علاءالدين محمد شاه جاهان", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-27", "permit_expiry": "2026-04-26", "nationality": "بنجلاديش", "source": null, "site": "دار الزنكي", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 296010125064, "name": "امدي ركيبالزمان شامك امدي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-29", "permit_expiry": "2026-04-28", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 295061204278, "name": "ام دي ابراهيم حسين ام دي امين الدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-29", "permit_expiry": "2026-04-28", "nationality": "بنجلاديش", "source": null, "site": "اجازة خارج البلاد", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 289040604642, "name": "شاميم مياه عبدالبارك", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-30", "permit_expiry": "2026-04-29", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 293122004319, "name": "حسن محمود ام دي شاند مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-01", "permit_expiry": "2026-04-30", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 292012003898, "name": "حسام حسن عبدالغفار جاد", "job": "مراسل", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "مصر", "source": null, "site": "اجازة خارج البلاد", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 277062205783, "name": "بيدون مياه توتا مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-12", "permit_expiry": "2026-05-11", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 293013103422, "name": "ابراهيم حسن سليم محمد", "job": "مراسل", "permit_issue": "2025-05-18", "permit_expiry": "2026-05-17", "nationality": "مصر", "source": null, "site": "اجازة خارج البلاد", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 292090110349, "name": "محمد احمد علي محروس", "job": "مراسل", "permit_issue": "2025-05-18", "permit_expiry": "2026-05-17", "nationality": "مصر", "source": null, "site": "اجازة خارج البلاد", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 288041705686, "name": "محمود عبدالدايم حسين سيد احمد", "job": "مراسل", "permit_issue": "2025-05-26", "permit_expiry": "2026-05-25", "nationality": "مصر", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 280030707129, "name": "عادل جوده عطاالله عبدالسيد", "job": "مراسل", "permit_issue": "2025-05-26", "permit_expiry": "2026-05-25", "nationality": "مصر", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 284022406391, "name": "مجدي رشاد حسن اسماعيل", "job": "مراسل", "permit_issue": "2025-05-26", "permit_expiry": "2026-05-25", "nationality": "مصر", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 281020117189, "name": "محمد فاروق محمد عبدالباقى", "job": "مراسل", "permit_issue": "2025-05-26", "permit_expiry": "2026-05-25", "nationality": "مصر", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 288120106462, "name": "محسن محمد عبدالنظير حسن", "job": "مراسل", "permit_issue": "2025-05-26", "permit_expiry": "2026-05-25", "nationality": "مصر", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 294051903564, "name": "ناصر كمال ابو الفضل محمد", "job": "مراسل", "permit_issue": "2025-05-28", "permit_expiry": "2026-05-27", "nationality": "مصر", "source": null, "site": "دار الزنكي", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 282072705294, "name": "مصطفى محروص ابوزيد على", "job": "مراسل", "permit_issue": "2025-05-28", "permit_expiry": "2026-05-27", "nationality": "مصر", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 295081202771, "name": "محمد حسن عبدالله محمد", "job": "مراسل", "permit_issue": "2025-05-28", "permit_expiry": "2026-05-27", "nationality": "مصر", "source": null, "site": "جمعية اشبيلية", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 283020104926, "name": "أمرون حسين نازرالاسلام", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-02", "permit_expiry": "2026-06-01", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 295020602587, "name": "محمد بابو حسن محمد", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-29", "permit_expiry": "2026-05-28", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 287012403473, "name": "مصطفى محمود قناوى عبدالموجود", "job": "مراسل", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "مصر", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 294102802844, "name": "وائل محمد محمد مرس غنيم", "job": "مراسل", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "مصر", "source": null, "site": "اجازة خارج البلاد", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 294010157067, "name": "عمران حسين عبد الحي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 293080804042, "name": "ام دي ريحان علي ام دي اكبرعلي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 278032505368, "name": "موشراف افاز الدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 278020117739, "name": "نور الحق جليل مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 286012905081, "name": "رائد عبدالجواد محمد حسانين", "job": "مراسل", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "مصر", "source": null, "site": "جمعية اشبيلية", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 280011506647, "name": "عبدالجهير شمس الحق", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 288031208221, "name": "حازم عربي عليو غازي", "job": "مراسل", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "مصر", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 288081008391, "name": "وكيل احمد محمد اسحاق", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 291060107873, "name": "محمد محمود سيد على", "job": "مراسل", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "مصر", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 292030405356, "name": "ام دي حسيبول علي ام دي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 296010127051, "name": "ساجور ميا فالو شيخ", "job": "مراسل", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 279052303039, "name": "مامون مياه كوداس مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 293021007406, "name": "نزرول ميا ميلون ميا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسل", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 297102401665, "name": "محمد روكي بابو جاهانجير علم", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 274121205131, "name": "محمد عباس هولادر محمد", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 279040604168, "name": "طريق السلام افتاف الدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 296012802516, "name": "اجور علي محمد علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 284072407077, "name": "ام دي قاشم برامانيك ام دي اسحاق", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 290121503614, "name": "جاكير حسين محمد علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 294091402238, "name": "محمد ساجال بيباري", "job": "مراسل", "permit_issue": "2025-06-25", "permit_expiry": "2026-06-24", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 277030507162, "name": "راسيل مياه عبدوس سلام", "job": "مراسل", "permit_issue": "2025-07-02", "permit_expiry": "2026-07-01", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - مراسلين"}, {"civil_id": 289030808131, "name": "امديانامول اسلام امدي حبيبالرحمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-01", "permit_expiry": "2025-07-31", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 297050704401, "name": "امديشيبون علي امدي ناصيرالدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-01", "permit_expiry": "2025-07-31", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 292060209655, "name": "سيمول شيخ الطاب شيخ", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-01", "permit_expiry": "2025-07-31", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 281070808439, "name": "امديسيد علي امدييوسف علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-01", "permit_expiry": "2025-07-31", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 302110802024, "name": "امديعبير حسين امديكمال حسين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-01", "permit_expiry": "2025-07-31", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 277060126475, "name": "امديعمر علي امدينور بوكس", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-01", "permit_expiry": "2025-07-31", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 277012206606, "name": "رشيد اولاديميجي اديجبيتي", "job": "مشرف منشأة تنظيف المباني", "permit_issue": "2024-08-01", "permit_expiry": "2025-07-31", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية مراسلين", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 302010203438, "name": "امديمعروف سيكدر منان سيكدر", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-01", "permit_expiry": "2025-07-31", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 294020208999, "name": "شفيقول اسلام امديبشير مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-01", "permit_expiry": "2025-07-31", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 301010147435, "name": "امديانوار امديعلي احمد", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-01", "permit_expiry": "2025-07-31", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 278101515085, "name": "امديشهيدول اسلام ابوطاهر موندول", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-01", "permit_expiry": "2025-07-31", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 302091902053, "name": "امديعشيق علي امديقيوم علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-01", "permit_expiry": "2025-07-31", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 293070807549, "name": "امديفيصل خان امدي بابولخان", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-01", "permit_expiry": "2025-07-31", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 280080210188, "name": "امديامينول اسلام باريك بيسواس", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-01", "permit_expiry": "2025-07-31", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 290052013805, "name": "روبيل مياه فاروق مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2024-08-06", "permit_expiry": "2025-08-05", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 273121011156, "name": "نبيل سالم ابراهيم احمد", "job": "مشرف منشأة تنظيف المباني", "permit_issue": "2024-08-19", "permit_expiry": "2025-08-18", "nationality": "مصر", "source": null, "site": "مدير عقد الرعاية السكنية", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 283021907579, "name": "فولميندو تامانج", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "بنجلاديش", "source": null, "site": "مركز النهيل الطبي", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 281021807448, "name": "بابيترا راي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": null, "site": "مركز الصياد الطبي", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 293072403513, "name": "اشا كريشنا بهادور لوبتشان", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": null, "site": "مركز الصياد الطبي", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 289012107788, "name": "بارباتي بوديل ساركي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-23", "permit_expiry": "2026-01-22", "nationality": "نيبال", "source": null, "site": "الرعاية السكنية نظافة", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 276010152873, "name": "محمد سولامان مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-26", "permit_expiry": "2026-01-25", "nationality": "بنجلاديش", "source": null, "site": "اجازة خارج البلاد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 277031506022, "name": "راجونى حيدر على", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-26", "permit_expiry": "2026-01-25", "nationality": "بنجلاديش", "source": null, "site": "اجازة خارج البلاد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 273010209004, "name": "مير حسين عبد الرحمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-26", "permit_expiry": "2026-01-25", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 280020115613, "name": "ابوالحسن صديق الرحمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-26", "permit_expiry": "2026-01-25", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 283112706692, "name": "بكر موندل شان علي موندل", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-26", "permit_expiry": "2026-01-25", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية نظافة", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 289010808046, "name": "أم دي مأمون ملا عبدالمنان", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-27", "permit_expiry": "2026-01-26", "nationality": "بنجلاديش", "source": null, "site": "مركز قوة الاطفاء العام", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 276112009218, "name": "عبدالصمد خليفه روبيول خليفه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-28", "permit_expiry": "2026-01-27", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 302092802839, "name": "ميرازالدين نورالهدي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-28", "permit_expiry": "2026-01-27", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية نظافة", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 298020108953, "name": "سليم حسين امديهاشم علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-28", "permit_expiry": "2026-01-27", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية نظافة", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 282061506724, "name": "فضل الحق ايمان علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-28", "permit_expiry": "2026-01-27", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 278111103551, "name": "اول اسوس الدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-01-28", "permit_expiry": "2026-01-27", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية نظافة", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 283061014505, "name": "عبد المنان عبد الشوبان", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-03-16", "permit_expiry": "2026-03-15", "nationality": "بنجلاديش", "source": null, "site": "صناعة الكيماويات", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 291071508904, "name": "ام دى اسلام ابوالكلام", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-03-16", "permit_expiry": "2026-03-15", "nationality": "بنجلاديش", "source": null, "site": "اجازة خارج البلاد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 281050213016, "name": "لاركي شيرباجولي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-03-16", "permit_expiry": "2026-03-15", "nationality": "نيبال", "source": null, "site": "صناعة الكيماويات", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 291090112112, "name": "رضا الكريم عبدالحليم", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-03-16", "permit_expiry": "2026-03-15", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 282102707419, "name": "سونيتا شالان", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-03-16", "permit_expiry": "2026-03-15", "nationality": "نيبال", "source": null, "site": "مركز  الصياد الطبي", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 275113002283, "name": "انوار حسين عبدالودود", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-03-17", "permit_expiry": "2026-03-16", "nationality": "بنجلاديش", "source": null, "site": "سائق تنكر الاطفاء", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 296010125195, "name": "ام دي سليمان حسين رينكو", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-03-17", "permit_expiry": "2026-03-16", "nationality": "بنجلاديش", "source": null, "site": "اجازة خارج البلاد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 294102007218, "name": "محمد ابراهيممياه محمد هورانعلي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-03-23", "permit_expiry": "2026-03-22", "nationality": "بنجلاديش", "source": null, "site": "الرعاية السكنية نظافة", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 288010214411, "name": "محمد ابوالهاشم محمد فخرالاسلام", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-29", "permit_expiry": "2026-04-28", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 281060107591, "name": "منير حسين شوهيد مياه", "job": "عامل تنظيف / فنادق", "permit_issue": "2025-04-29", "permit_expiry": "2026-04-28", "nationality": "بنجلاديش", "source": null, "site": "قوة الاطفاء العام", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 280042607221, "name": "ابوالقاشم مشرف حسين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-29", "permit_expiry": "2026-04-28", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 276040309528, "name": "ام دي مهيبول ام دي جهاد بوكس", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-04-30", "permit_expiry": "2026-04-29", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 295101003682, "name": "برهان حسين ايمان حسين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 277020213558, "name": "امدي محبوب فقير عبدالباطن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-07", "permit_expiry": "2026-05-06", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 294070107803, "name": "منير ام دي لالميا مولا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-12", "permit_expiry": "2026-05-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 296121002382, "name": "أم دي شريف حسين أم دي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-12", "permit_expiry": "2026-05-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 281120509008, "name": "ام دي ماسود مياه ام دي هلال الدين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-12", "permit_expiry": "2026-05-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 280020311438, "name": "ام دي اجاهارول ام دي جيكرول", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-12", "permit_expiry": "2026-05-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 287052016224, "name": "محمد نورول اسلام محمد", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-12", "permit_expiry": "2026-05-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 296031702326, "name": "ام دي غلام رابي ام دي غلام راسول", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-12", "permit_expiry": "2026-05-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 296120601711, "name": "محمد مهدي حسن محمد يوسف علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-12", "permit_expiry": "2026-05-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 296040202526, "name": "ام دي طارق مياام دي صفايت الله", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-13", "permit_expiry": "2026-05-12", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 287010179236, "name": "عثمان غني عبدالحكيم", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-13", "permit_expiry": "2026-05-12", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 290061010788, "name": "ابوالقاسم امدي رينو ميا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-20", "permit_expiry": "2026-05-19", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 284030113855, "name": "حبيب الله امان على", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-20", "permit_expiry": "2026-05-19", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 282101906731, "name": "مهدي حسن محمد احمد", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-05-26", "permit_expiry": "2026-05-25", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 295110103095, "name": "أم دي نبي الرحمن مطيع الرحمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-02", "permit_expiry": "2026-06-01", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 285121606342, "name": "محمد مامون ام دي ممتاج ودين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 278042806455, "name": "شهيدالاسلام باريك مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-10", "permit_expiry": "2026-06-09", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 277031007653, "name": "محمد هميون كبير عبد المومن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 281072005488, "name": "افضل سوريف رهول امين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 283032009985, "name": "محمدمنير حسين محمد جلال الدين مرايدها", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 272032903991, "name": "بالبير سينج", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "الهند", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 285061702788, "name": "ريزفيا عبدالله", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "سريلانكا", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 293010704775, "name": "محمد الياس بلال مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 292020504772, "name": "سودهير شاندرا بيشواس", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 293020109427, "name": "سوجون مياه باصو مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 271021904804, "name": "ساجو أم دي راجاك كازي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 289112007485, "name": "ام دي حسن شمس الحق", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 276071607413, "name": "ام دي عبدالبارك مولاه قادر مولاه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 285011107753, "name": "ام دى امام حسين ام دى شمس الحق", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 292060304265, "name": "امدي زكيرالاسلام امدي مخلص الرحمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 292010181025, "name": "محمد فيصل محمد ابوبكر", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 286051510808, "name": "جورساهيب سينج", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "الهند", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 275012805802, "name": "محمد رفيقول اسلام ام دي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 292010180604, "name": "محمد جويل شهيدول اسلام", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-12", "permit_expiry": "2026-06-11", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 295021003666, "name": "ساجيب حسين ام دي بابول هولادر", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 288090508347, "name": "نازمول حسن لابلو حنيف ودين", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 293060203477, "name": "شاهجاهان علي عبدالرحمن", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 295123102905, "name": "جاهيدول اسلام ام دي جاكير حسين اكاش", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 288100808029, "name": "ام دي عاشق الاسلام ام دي سنة علي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 274010110914, "name": "لاكي ايمان الدين مدبار", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 283021807455, "name": "ام دي سايدر رحمن ام دي ابوالكلام", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-06-13", "permit_expiry": "2026-06-12", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 289062011872, "name": "بلال حسين عبدالمنان", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-07-06", "permit_expiry": "2026-07-05", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 294050308173, "name": "ام دي علمجير اسحاق مياه", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-07-06", "permit_expiry": "2026-07-05", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 283122511995, "name": "ام دي شهيدول اسلام علي برامانيك", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-07-06", "permit_expiry": "2026-07-05", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 278110707353, "name": "عمر فاروق ام دي روستم ميا", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-07-06", "permit_expiry": "2026-07-05", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}, {"civil_id": 282042017685, "name": "زاكير علي حيدر كازي", "job": "عامل تنظيف / مكاتب", "permit_issue": "2025-07-06", "permit_expiry": "2026-07-05", "nationality": "بنجلاديش", "source": null, "site": "غير محدد", "contract": "عقد الرعاية - نظافة"}]</script>
-<script>
-(function(){
-  const RAW = JSON.parse(document.getElementById('data-json').textContent);
-
-  const TODAY = new Date();
-  TODAY.setHours(0,0,0,0);
-  const SOON_DAYS = 60;
-
-  function parseDate(s){
-    if(!s) return null;
-    const parts = s.split('-');
-    if(parts.length !== 3) return null;
-    const d = new Date(+parts[0], +parts[1]-1, +parts[2]);
-    return isNaN(d.getTime()) ? null : d;
-  }
-
-  function statusOf(rec){
-    const d = parseDate(rec.permit_expiry);
-    if(!d) return 'unknown';
-    const diffDays = Math.floor((d - TODAY) / 86400000);
-    if(diffDays < 0) return 'expired';
-    if(diffDays <= SOON_DAYS) return 'soon';
-    return 'active';
-  }
-
-  const STATUS_LABEL = { active:'سارٍ', soon:'قريب الانتهاء', expired:'منتهٍ', unknown:'غير محدد' };
-  const STATUS_CLASS = { active:'active', soon:'soon', expired:'expired', unknown:'unknown' };
-
-  const data = RAW.map((r, i) => ({
-    idx: i+1,
-    name: r.name || '',
-    civil_id: r.civil_id || '',
-    job: r.job || 'غير محدد',
-    nationality: r.nationality || 'غير محدد',
-    contract: r.contract || 'غير محدد',
-    site: r.site || 'غير محدد',
-    permit_issue: r.permit_issue || '',
-    permit_expiry: r.permit_expiry || '',
-    status: statusOf(r)
-  }));
-
-  // ---------- populate filter dropdowns ----------
-  function uniqueSorted(key){
-    return [...new Set(data.map(d => d[key]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ar'));
-  }
-
-  function fillSelect(id, values){
-    const sel = document.getElementById(id);
-    values.forEach(v => {
-      const opt = document.createElement('option');
-      opt.value = v; opt.textContent = v;
-      sel.appendChild(opt);
-    });
-  }
-
-  fillSelect('f-site', uniqueSorted('site'));
-  fillSelect('f-contract', uniqueSorted('contract'));
-  fillSelect('f-nat', uniqueSorted('nationality'));
-  fillSelect('f-job', uniqueSorted('job'));
-
-  // ---------- state ----------
-  let state = { search:'', site:'', contract:'', nat:'', job:'', status:'' };
-  let sortKey = 'permit_expiry';
-  let sortDir = 1; // 1 asc, -1 desc
-
-  const els = {
-    search: document.getElementById('f-search'),
-    site: document.getElementById('f-site'),
-    contract: document.getElementById('f-contract'),
-    nat: document.getElementById('f-nat'),
-    job: document.getElementById('f-job'),
-    status: document.getElementById('f-status'),
-    tbody: document.getElementById('tbody'),
-    resultCount: document.getElementById('result-count'),
-    profilePanel: document.getElementById('profile-panel'),
-    profileGrid: document.getElementById('profile-grid'),
-    chips: document.getElementById('chips'),
-    emptyState: document.getElementById('empty-state'),
-    resetBtn: document.getElementById('reset-btn'),
-    stats: document.getElementById('stats')
-  };
-
-  els.search.addEventListener('input', e => { state.search = e.target.value.trim(); render(); });
-  els.site.addEventListener('change', e => { state.site = e.target.value; render(); });
-  els.contract.addEventListener('change', e => { state.contract = e.target.value; render(); });
-  els.nat.addEventListener('change', e => { state.nat = e.target.value; render(); });
-  els.job.addEventListener('change', e => { state.job = e.target.value; render(); });
-  els.status.addEventListener('change', e => { state.status = e.target.value; render(); });
-  els.resetBtn.addEventListener('click', () => {
-    state = { search:'', site:'', contract:'', nat:'', job:'', status:'' };
-    els.search.value=''; els.site.value=''; els.contract.value=''; els.nat.value=''; els.job.value=''; els.status.value='';
-    render();
-  });
-
-  document.querySelectorAll('thead th').forEach(th => {
-    th.addEventListener('click', () => {
-      const key = th.dataset.key;
-      if(sortKey === key){ sortDir *= -1; } else { sortKey = key; sortDir = 1; }
-      document.querySelectorAll('thead th').forEach(t => { t.classList.remove('sorted'); t.querySelector('.arrow').textContent='▾'; });
-      th.classList.add('sorted');
-      th.querySelector('.arrow').textContent = sortDir === 1 ? '▾' : '▴';
-      render();
-    });
-  });
-
-  function filtered(){
-    const s = state.search.toLowerCase();
-    return data.filter(r => {
-      if(state.site && r.site !== state.site) return false;
-      if(state.contract && r.contract !== state.contract) return false;
-      if(state.nat && r.nationality !== state.nat) return false;
-      if(state.job && r.job !== state.job) return false;
-      if(state.status && r.status !== state.status) return false;
-      if(s){
-        const hay = (r.name + ' ' + r.civil_id).toLowerCase();
-        if(!hay.includes(s)) return false;
-      }
-      return true;
-    });
-  }
-
-  function sortRows(rows){
-    const statusRank = { expired:0, soon:1, active:2, unknown:3 };
-    return rows.slice().sort((a,b) => {
-      let av = a[sortKey], bv = b[sortKey];
-      if(sortKey === 'status'){ av = statusRank[a.status]; bv = statusRank[b.status]; }
-      else if(sortKey === 'permit_issue' || sortKey === 'permit_expiry'){
-        av = parseDate(a[sortKey]) || new Date(0);
-        bv = parseDate(b[sortKey]) || new Date(0);
-      } else if(sortKey === 'civil_id' || sortKey === 'idx'){
-        av = Number(av) || 0; bv = Number(bv) || 0;
-      } else if(typeof av === 'string'){
-        return sortDir * av.localeCompare(bv, 'ar');
-      }
-      if(av < bv) return -1 * sortDir;
-      if(av > bv) return 1 * sortDir;
-      return 0;
-    });
-  }
-
-  function fmtCivil(id){
-    if(!id) return '—';
-    return String(id);
-  }
-
-  function fmtDate(s){
-    if(!s) return '—';
-    return s;
-  }
-
-  function renderChips(){
-    const labels = {
-      search: v => `بحث: "${v}"`,
-      site: v => `الموقع: ${v}`,
-      contract: v => `العقد: ${v}`,
-      nat: v => `الجنسية: ${v}`,
-      job: v => `المهنة: ${v}`,
-      status: v => `الحالة: ${STATUS_LABEL[v] || v}`
-    };
-    els.chips.innerHTML = '';
-    Object.keys(state).forEach(k => {
-      if(!state[k]) return;
-      const chip = document.createElement('span');
-      chip.className = 'chip';
-      chip.innerHTML = `${labels[k](state[k])} <button aria-label="إزالة">×</button>`;
-      chip.querySelector('button').addEventListener('click', () => {
-        state[k] = '';
-        if(k === 'search') els.search.value = ''; else document.getElementById('f-' + (k==='nat'?'nat':k)).value='';
-        render();
-      });
-      els.chips.appendChild(chip);
-    });
-  }
-
-  function renderStats(rows){
-    const total = rows.length;
-    const sites = new Set(rows.map(r=>r.site)).size;
-    const expiring = rows.filter(r=>r.status==='soon').length;
-    const expired = rows.filter(r=>r.status==='expired').length;
-    const nats = new Set(rows.map(r=>r.nationality)).size;
-    els.stats.innerHTML = `
-      <div class="stat"><div class="num">${total}</div><div class="label">إجمالي العمال (بعد الفلترة)</div></div>
-      <div class="stat"><div class="num">${sites}</div><div class="label">عدد المواقع الظاهرة</div></div>
-      <div class="stat expiring"><div class="num">${expiring}</div><div class="label">تصاريح قريبة الانتهاء (٦٠ يوم)</div></div>
-      <div class="stat expired"><div class="num">${expired}</div><div class="label">تصاريح منتهية بالفعل</div></div>
-      <div class="stat"><div class="num">${nats}</div><div class="label">عدد الجنسيات</div></div>
-    `;
-  }
-
-  const FIELD_DEFS = [
-    { key:'job', label:'المهنة' },
-    { key:'nationality', label:'الجنسية' },
-    { key:'contract', label:'نوع العقد' },
-    { key:'site', label:'الموقع' },
-    { key:'permit_issue', label:'تاريخ الإصدار' },
-    { key:'permit_expiry', label:'تاريخ الانتهاء' }
-  ];
-
-  function renderProfile(){
-    const q = state.search.trim().toLowerCase();
-    // Only trigger the profile lookup for name searches (letters), not bare civil-ID digit lookups,
-    // and pull from the FULL dataset so every record tied to that name shows up, regardless of
-    // which dropdown filters are currently active.
-    if(!q || /^\d+$/.test(q) || q.length < 2){
-      els.profilePanel.classList.remove('show');
-      els.profileGrid.innerHTML = '';
-      return;
-    }
-    const matches = data.filter(r => r.name.toLowerCase().includes(q));
-    if(matches.length === 0){
-      els.profilePanel.classList.remove('show');
-      els.profileGrid.innerHTML = '';
-      return;
-    }
-    const LIMIT = 9;
-    const shown = matches.slice(0, LIMIT);
-    els.profileGrid.innerHTML = shown.map(r => `
-      <div class="profile-card status-${r.status}">
-        <div class="pc-head">
-          <div>
-            <div class="pc-name">${r.name}</div>
-            <div class="pc-civil">رقم مدني: ${fmtCivil(r.civil_id)}</div>
-          </div>
-          <span class="badge ${STATUS_CLASS[r.status]}">${STATUS_LABEL[r.status]}</span>
+    <!-- Sidebar / القائمة الجانبية -->
+    <div class="w-full md:w-64 bg-slate-900 text-white flex flex-col p-5 shadow-xl">
+        <div class="flex items-center gap-3 mb-8 px-2">
+            <i class="fa-solid fa-cubes-stacked text-amber-500 text-2xl"></i>
+            <h1 class="text-xl font-bold tracking-wide">Concord Sky</h1>
         </div>
-        <div class="profile-fields">
-          ${FIELD_DEFS.map(f => `
-            <div class="pf">
-              <div class="pf-label">${f.label}</div>
-              <div class="pf-value">${(f.key === 'permit_issue' || f.key === 'permit_expiry') ? fmtDate(r[f.key]) : (r[f.key] || '—')}</div>
+        
+        <nav class="flex flex-col gap-2 flex-1">
+            <a href="#" class="flex items-center gap-3 bg-amber-500 text-slate-900 font-semibold px-4 py-3 rounded-lg transition-all shadow-md">
+                <i class="fa-solid fa-users w-5"></i>
+                <span>إدارة العمال</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg transition-all">
+                <i class="fa-solid fa-chart-pie w-5"></i>
+                <span>التقارير</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg transition-all">
+                <i class="fa-solid fa-gear w-5"></i>
+                <span>الإعدادات</span>
+            </a>
+        </nav>
+        
+        <div class="pt-5 border-t border-slate-800 text-xs text-slate-500 text-center">
+            &copy; 2026 Concord Sky Inc.
+        </div>
+    </div>
+
+    <!-- Main Content / المحتوى الرئيسي -->
+    <div class="flex-1 flex flex-col min-w-0">
+        
+        <!-- Top Navbar -->
+        <header class="bg-white border-b border-gray-200 py-4 px-6 md:px-8 flex items-center justify-between shadow-sm">
+            <h2 class="text-xl font-bold text-gray-900">لوحة تحكم بيانات العمال والمواقع</h2>
+            <div class="flex items-center gap-3">
+                <div class="bg-amber-50 text-amber-700 font-semibold px-3 py-1.5 rounded-full text-sm flex items-center gap-2 border border-amber-200">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span>متصل حي بجوجل شيتس</span>
+                </div>
             </div>
-          `).join('')}
-        </div>
-      </div>
-    `).join('') + (matches.length > LIMIT ? `<div class="profile-more">و ${matches.length - LIMIT} سجل إضافي مطابق لهذا الاسم — دقّق البحث لعرضهم</div>` : '');
-    els.profilePanel.classList.add('show');
-  }
+        </header>
 
-  function render(){
-    const rows = sortRows(filtered());
-    renderStats(rows);
-    renderChips();
-    renderProfile();
-    els.resultCount.innerHTML = `عرض <b>${rows.length}</b> من أصل <b>${data.length}</b> سجل`;
+        <!-- Page Body -->
+        <main class="flex-1 p-6 md:p-8 space-y-6 overflow-y-auto">
+            
+            <!-- Cards Section / قسم بطاقات الإحصاء -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 mb-1">إجمالي العمال بالمنظومة</p>
+                        <h3 id="totalWorkersCard" class="text-3xl font-bold text-gray-900">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-user-group"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 mb-1">العمال النشطين</p>
+                        <h3 id="activeWorkersCard" class="text-3xl font-bold text-green-600">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-lg bg-green-50 text-green-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 mb-1">آخر تحديث تلقائي</p>
+                        <h3 class="text-base font-semibold text-gray-700 mt-2 flex items-center gap-2">
+                            <i class="fa-solid fa-clock text-slate-400"></i>
+                            <span id="lastUpdatedTime">--:--</span>
+                        </h3>
+                    </div>
+                </div>
+            </div>
 
-    if(rows.length === 0){
-      els.tbody.innerHTML = '';
-      els.emptyState.style.display = 'block';
-      return;
-    }
-    els.emptyState.style.display = 'none';
+            <!-- Two Columns Workspace / مساحة العمل المقسمة -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                
+                <!-- Right Side: Add Worker Form / فورم إضافة عامل -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 lg:col-span-1">
+                    <h3 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus text-amber-500"></i>
+                        <span>إضافة عامل جديد مباشرة لقاعدة البيانات</span>
+                    </h3>
+                    
+                    <form id="addWorkerForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">اسم العامل بالكامل</label>
+                            <input type="text" id="workerNameInput" required placeholder="مثال: محمد أحمد علي"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">الوظيفة / المسمى الوظيفي</label>
+                            <input type="text" id="workerRoleInput" required placeholder="مثال: سائق مركبة خفيفة"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">الرقم المدني (12 رقم)</label>
+                            <input type="text" id="workerIdInput" required pattern="\d{12}" placeholder="مثال: 292020504772"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm tracking-wider">
+                        </div>
+                        
+                        <button type="submit" id="submitWorkerBtn"
+                            class="w-full bg-slate-900 text-white font-semibold py-2.5 rounded-lg hover:bg-slate-800 active:bg-slate-950 transition-all text-sm mt-2 shadow-sm cursor-pointer flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span>حفظ العامل فوراً</span>
+                        </button>
+                    </form>
+                </div>
 
-    els.tbody.innerHTML = rows.map(r => `
-      <tr>
-        <td class="center">${r.idx}</td>
-        <td class="name">${r.name}</td>
-        <td class="civil">${fmtCivil(r.civil_id)}</td>
-        <td>${r.job}</td>
-        <td>${r.nationality}</td>
-        <td>${r.contract}</td>
-        <td>${r.site}</td>
-        <td>${fmtDate(r.permit_issue)}</td>
-        <td>${fmtDate(r.permit_expiry)}</td>
-        <td class="center"><span class="badge ${STATUS_CLASS[r.status]}">${STATUS_LABEL[r.status]}</span></td>
-      </tr>
-    `).join('');
-  }
+                <!-- Left Side: Workers Table / جدول عرض بيانات العمال -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 lg:col-span-2 overflow-hidden flex flex-col">
+                    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                        <h3 class="font-bold text-gray-900 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-indigo-600"></i>
+                            <span>كشف العمال الحاليين في السستم</span>
+                        </h3>
+                        <button onclick="fetchWorkers()" class="text-sm bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-rotate"></i>
+                            <span>تحديث البيانات</span>
+                        </button>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 border-b border-gray-200 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                    <th class="py-3.5 px-4 w-12 text-center">م</th>
+                                    <th class="py-3.5 px-4">اسم العامل</th>
+                                    <th class="py-3.5 px-4">الوظيفة</th>
+                                    <th class="py-3.5 px-4">الرقم المدني</th>
+                                    <th class="py-3.5 px-4 text-center">حالة الإقامة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="workersTableBody" class="divide-y divide-gray-200 text-sm">
+                                <!-- سيتم حقن البيانات هنا برمجياً بواسطة الجافا سكريبت -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-  render();
-})();
+            </div>
+        </main>
+    </div>
 
-(function(){
-  // Simple client-side access gate. This is a deterrent, not real security —
-  // anyone who views the page source can read the password below.
-  // Change it to whatever you like before publishing.
-  const PASSWORD = "Abo Hussain";
+    <!-- Core Connection Logic Script / كود الربط الفعلي والمباشر بقاعدة البيانات -->
+    <script>
+        // رابط الـ Web App المباشر الخاص بك والمستخرج من Google Apps Script
+        const sheetURL = "https://script.google.com/macros/s/AKfycbxpcE2tO2PxeJE-YzMcjBiwJlhhwuJslSiEigm8AGyxVz6xDQrzhrq1XnJIGQuzwvss/exec";
 
-  const gate = document.getElementById('gate');
-  const appContent = document.getElementById('app-content');
-  const input = document.getElementById('gate-input');
-  const btn = document.getElementById('gate-btn');
-  const errorEl = document.getElementById('gate-error');
+        // 1. دالة لجلب وعرض البيانات من الجوجل شيت تلقائياً
+        async function fetchWorkers() {
+            const tableBody = document.getElementById("workersTableBody");
+            
+            // إظهار مؤشر تحميل مريح للمستخدم لحين انتهاء الاتصال
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="py-8 text-center text-gray-500 font-medium">
+                        <i class="fa-solid fa-spinner animate-spin text-amber-500 text-xl ml-2"></i>
+                        جاري جلب كشوفات العمال المحدثة من السيرفر المباشر...
+                    </td>
+                </tr>
+            `;
 
-  function tryUnlock(){
-    if(input.value === PASSWORD){
-      gate.style.display = 'none';
-      appContent.style.display = 'block';
-    } else {
-      errorEl.textContent = 'كلمة المرور غير صحيحة، حاول مرة أخرى';
-      input.value = '';
-      input.focus();
-    }
-  }
+            try {
+                const response = await fetch(sheetURL);
+                const workers = await response.json();
 
-  btn.addEventListener('click', tryUnlock);
-  input.addEventListener('keydown', e => { if(e.key === 'Enter') tryUnlock(); });
-  input.focus();
-})();
-</script>
+                // مسح محتوى الجدول لبناء الأسطر الجديدة
+                tableBody.innerHTML = "";
+
+                if (!workers || workers.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="py-8 text-center text-gray-400">
+                                <i class="fa-solid fa-folder-open text-2xl block mb-2"></i>
+                                لا توجد سجلات عمال مخزنة في الجدول حالياً.
+                            </td>
+                        </tr>
+                    `;
+                    updateDashboardCards(0, 0);
+                    return;
+                }
+
+                let activeCount = 0;
+
+                // رص صفوف الجدول ديناميكياً
+                workers.forEach((worker, index) => {
+                    const statusText = worker.status || "نشط";
+                    const isStatusActive = statusText === "نشط";
+                    if (isStatusActive) activeCount++;
+
+                    // تصميم الـ Badge بناء على الحالة
+                    const badgeClass = isStatusActive 
+                        ? "bg-green-100 text-green-800 border border-green-200" 
+                        : "bg-red-100 text-red-800 border border-red-200";
+
+                    const row = `
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="py-3 px-4 text-center font-medium text-gray-400">${index + 1}</td>
+                            <td class="py-3 px-4 font-bold text-gray-900">${worker.name || '---'}</td>
+                            <td class="py-3 px-4 text-gray-600">${worker.role || '---'}</td>
+                            <td class="py-3 px-4 text-gray-600 font-mono tracking-wider">${worker.national_id || '---'}</td>
+                            <td class="py-3 px-4 text-center">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${badgeClass}">
+                                    ${statusText}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+
+                // تحديث كروت الإعدادات والوقت
+                updateDashboardCards(workers.length, activeCount);
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="py-8 text-center text-red-600 font-semibold">
+                            <i class="fa-solid fa-triangle-exclamation text-xl ml-1"></i>
+                            فشل الاتصال بقاعدة البيانات. يرجى مراجعة إعدادات النشر على جيت هاب وجوجل شيتس.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // دالة لتحديث كروت الإحصاء العلوية
+        function updateDashboardCards(total, active) {
+            document.getElementById("totalWorkersCard").innerText = total;
+            document.getElementById("activeWorkersCard").innerText = active;
+            
+            const now = new Date();
+            document.getElementById("lastUpdatedTime").innerText = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        // 2. دالة لإرسال عامل جديد وحفظه في جوجل شيت كـ Row جديد فوراً
+        async function handleAddWorker(event) {
+            event.preventDefault();
+
+            const nameInput = document.getElementById("workerNameInput");
+            const roleInput = document.getElementById("workerRoleInput");
+            const idInput = document.getElementById("workerIdInput");
+            const submitBtn = document.getElementById("submitWorkerBtn");
+
+            // تجميع البيانات لإرسالها بالـ Schema المطلوب في الـ Apps Script
+            const newWorkerData = {
+                name: nameInput.value.trim(),
+                role: roleInput.value.trim(),
+                national_id: idInput.value.trim(),
+                status: "نشط"
+            };
+
+            try {
+                // وضع قفل مؤقت للزرار لضمان عدم الضغط المزدوج أثناء العملية
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> <span>جاري الحفظ بالسيرفر...</span>`;
+
+                const response = await fetch(sheetURL, {
+                    method: "POST",
+                    body: JSON.stringify(newWorkerData)
+                });
+
+                const result = await response.json();
+
+                if (result.result === "success") {
+                    // تصفير الخانات بالكامل بعد النجاح
+                    document.getElementById("addWorkerForm").reset();
+                    
+                    // إعادة تنشيط الجدول فوراً لجلب الصف الجديد دون ريفريش للصفحة كاملة
+                    await fetchWorkers();
+                } else {
+                    alert("رد غير متوقع من السيرفر، يرجى إعادة المحاولة.");
+                }
+
+            } catch (error) {
+                console.error("Error pushing data:", error);
+                alert("حدث خطأ تقني أثناء محاولة حفظ العامل. تحقق من جودة اتصال الإنترنت.");
+            } finally {
+                // فك قفل الزرار وإعادته لوضعه الأصلي
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> <span>حفظ العامل فوراً</span>`;
+            }
+        }
+
+        // تشغيل نظام الربط ومراقبة الأحداث بمجرد جاهزية الصفحة
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchWorkers(); // جلب البيانات عند الفتح لأول مرة
+            document.getElementById("addWorkerForm").addEventListener("submit", handleAddWorker); // ربط دالة الإرسال بالفورم
+        });
+    </script>
 </body>
 </html>
