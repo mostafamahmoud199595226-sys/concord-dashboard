@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كشف العمالة — كونكورد سكاي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F8F9FA;
+    --surface:#FFFFFF;
+    --ink:#1C2B45;
+    --ink-soft:#5B6B85;
+    --hairline:#E5E0D2;
+    --hairline-strong:#D7CFB8;
+    --brass:#A9793C;
+    --brass-deep:#8A5F2A;
+    --brass-tint:#F3E7D2;
+    --teal:#2F6B65;
+    --teal-tint:#E4EFEC;
+    --green:#2F7D5B;
+    --green-tint:#E5F2EA;
+    --amber:#B8862E;
+    --amber-tint:#FBF0DC;
+    --red:#B0442E;
+    --red-tint:#F8E7E1;
+    --gray-tint:#EFEDE6;
+    --shadow: 0 1px 2px rgba(28,43,69,.04), 0 8px 24px -12px rgba(28,43,69,.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 100% -10%, rgba(169,121,60,.06), transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Cairo', sans-serif;
+    font-feature-settings:"tnum" 1;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  ::selection{ background:var(--brass-tint); color:var(--brass-deep); }
+
+  header.top{
+    padding:38px 5vw 28px;
+    display:flex; align-items:flex-start; justify-content:space-between; gap:24px;
+    border-bottom:1px solid var(--hairline);
+    background:linear-gradient(180deg, rgba(169,121,60,.05), transparent 70%);
+  }
+  .titleblock .eyebrow{
+    font-family:'Tajawal', sans-serif; font-weight:700; letter-spacing:.14em;
+    font-size:11.5px; color:var(--brass-deep); text-transform:uppercase;
+    display:flex; align-items:center; gap:10px; margin-bottom:10px;
+  }
+  .titleblock .eyebrow::before{ content:""; width:26px;height:1px; background:var(--brass); display:inline-block; }
+  .titleblock h1{
+    font-family:'Tajawal', sans-serif; font-weight:900; font-size:clamp(26px, 3.4vw, 40px);
+    margin:0 0 8px; color:var(--ink); line-height:1.15;
+  }
+  .titleblock p.sub{ margin:0; color:var(--ink-soft); font-size:14.5px; max-width:600px; line-height:1.6; }
+
+  .seal{ flex:none; width:112px; height:112px; position:relative; display:flex; align-items:center; justify-content:center; transform:rotate(-9deg); }
+  .seal svg{ width:100%; height:100%; }
+
+  main{ padding:30px 5vw 70px; }
+
+  .live-pill{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:11.5px; font-weight:700; color:var(--teal);
+    background:var(--teal-tint); padding:5px 12px; border-radius:100px;
+    margin-bottom:18px;
+  }
+  .live-pill .dot{ width:7px; height:7px; border-radius:50%; background:var(--teal); animation:pulse 1.8s infinite; }
+  .live-pill.err{ color:var(--red); background:var(--red-tint); }
+  .live-pill.err .dot{ background:var(--red); animation:none; }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+
+  .stats{ display:grid; grid-template-columns:repeat(5, 1fr); gap:14px; margin-bottom:24px; }
+  .stat{
+    background:var(--surface); border:1px solid var(--hairline); border-radius:14px;
+    padding:18px 18px 16px; box-shadow:var(--shadow); position:relative; overflow:hidden;
+  }
+  .stat::after{ content:""; position:absolute; inset:0 0 auto 0; height:3px; background:var(--accent, var(--brass)); }
+  .stat .num{ font-family:'Tajawal',sans-serif; font-weight:900; font-size:28px; color:var(--ink); line-height:1; }
+  .stat .label{ margin-top:8px; font-size:12px; color:var(--ink-soft); font-weight:600; line-height:1.4; }
+  .stat.alert{ --accent: var(--red); }
+  .stat.alert .num{ color:var(--red); }
+  .stat.warn{ --accent: var(--amber); }
+  .stat.warn .num{ color:#96691E; }
+
+  .filters{
+    background:var(--surface); border:1px solid var(--hairline); border-radius:16px;
+    box-shadow:var(--shadow); padding:18px 20px; margin-bottom:16px;
+  }
+  .filters .row{ display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; }
+  .field{ display:flex; flex-direction:column; gap:6px; min-width:150px; flex:1 1 150px; }
+  .field label{ font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em; }
+  .field select, .field input{
+    font-family:'Cairo', sans-serif; font-size:14px; padding:9px 12px;
+    border:1px solid var(--hairline-strong); border-radius:9px; background:var(--paper);
+    color:var(--ink); outline:none; transition:border-color .15s, box-shadow .15s;
+  }
+  .field select:focus, .field input:focus{ border-color:var(--brass); box-shadow:0 0 0 3px var(--brass-tint); }
+  .field.search{ flex:2 1 220px; }
+  .reset-btn{
+    flex:none; font-family:'Cairo',sans-serif; font-weight:700; font-size:13.5px;
+    color:var(--brass-deep); background:var(--brass-tint); border:1px solid transparent;
+    padding:10px 18px; border-radius:9px; cursor:pointer; white-space:nowrap;
+  }
+  .reset-btn:hover{ background:#ecdbb8; }
+  .download-btn{
+    flex:none; font-family:'Cairo',sans-serif; font-weight:700; font-size:13px;
+    color:var(--ink-soft); background:transparent; border:1px dashed var(--hairline-strong);
+    padding:9px 16px; border-radius:9px; cursor:pointer; white-space:nowrap;
+    display:flex; align-items:center; gap:6px;
+  }
+  .download-btn:hover{ border-color:var(--brass); color:var(--brass-deep); }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+  .chip{ display:flex; align-items:center; gap:6px; background:var(--teal-tint); color:var(--teal); font-size:12.5px; font-weight:700; padding:5px 10px 5px 6px; border-radius:100px; }
+  .chip button{ border:none; background:rgba(47,107,101,.15); color:var(--teal); width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:11px; line-height:1; padding:0; }
+
+  /* Accordion add-worker panel */
+  .accordion{
+    background:var(--surface); border:1.5px dashed var(--hairline-strong); border-radius:16px;
+    margin-bottom:18px; overflow:hidden; transition:border-color .15s;
+  }
+  .accordion.open{ border-color:var(--brass); border-style:solid; }
+  .accordion-head{
+    display:flex; align-items:center; gap:14px; padding:16px 20px; cursor:pointer; user-select:none;
+  }
+  .accordion-head .plus{
+    flex:none; width:34px; height:34px; border-radius:50%; background:var(--brass-tint); color:var(--brass-deep);
+    display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700;
+    transition:transform .2s;
+  }
+  .accordion.open .accordion-head .plus{ transform:rotate(45deg); }
+  .accordion-head .ah-text b{ font-family:'Tajawal',sans-serif; font-weight:800; font-size:14.5px; color:var(--ink); display:block; }
+  .accordion-head .ah-text span{ font-size:12px; color:var(--ink-soft); }
+  .accordion-body{ max-height:0; overflow:hidden; transition:max-height .25s ease; }
+  .accordion.open .accordion-body{ max-height:900px; }
+  .accordion-form{ padding:4px 20px 22px; }
+  .af-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:14px 16px; }
+  .af-field{ display:flex; flex-direction:column; gap:6px; }
+  .af-field.full{ grid-column:1 / -1; }
+  .af-field label{ font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em; }
+  .af-field label .req{ color:var(--red); }
+  .af-field input{
+    font-family:'Cairo',sans-serif; font-size:14px; padding:9px 12px;
+    border:1px solid var(--hairline-strong); border-radius:9px; background:var(--paper); color:var(--ink); outline:none;
+  }
+  .af-field input:focus{ border-color:var(--teal); box-shadow:0 0 0 3px var(--teal-tint); }
+  .af-actions{ display:flex; align-items:center; gap:12px; margin-top:18px; }
+  .af-submit{
+    font-family:'Cairo',sans-serif; font-weight:700; font-size:13.5px; color:#fff; background:var(--teal);
+    border:none; padding:11px 24px; border-radius:9px; cursor:pointer; display:flex; align-items:center; gap:8px;
+  }
+  .af-submit:hover{ background:#255a55; }
+  .af-submit:disabled{ opacity:.6; cursor:not-allowed; }
+  .af-error, .af-success{ font-size:12.5px; font-weight:700; }
+  .af-error{ color:var(--red); }
+  .af-success{ color:var(--green); }
+  .spinner{
+    width:14px; height:14px; border-radius:50%; border:2px solid rgba(255,255,255,.4);
+    border-top-color:#fff; animation:spin .7s linear infinite; display:inline-block;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .result-count{ font-size:13px; color:var(--ink-soft); margin:0 2px 12px; font-weight:600; }
+  .result-count b{ color:var(--ink); font-weight:800; }
+
+  .profile-panel{ margin-bottom:22px; display:none; }
+  .profile-panel.show{ display:block; }
+  .profile-panel .heading{ display:flex; align-items:center; gap:10px; margin:0 2px 12px; font-family:'Tajawal',sans-serif; font-weight:800; font-size:13.5px; color:var(--brass-deep); }
+  .profile-panel .heading::before{ content:"👤"; font-size:14px; }
+  .profile-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:14px; }
+  .profile-card{ background:var(--surface); border:1px solid var(--hairline-strong); border-radius:16px; box-shadow:var(--shadow); padding:18px 20px 16px; position:relative; overflow:hidden; }
+  .profile-card::before{ content:""; position:absolute; inset:0 auto 0 0; width:4px; background:var(--brass); }
+  .profile-card .pc-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed var(--hairline-strong); }
+  .profile-card .pc-name{ font-family:'Tajawal',sans-serif; font-weight:800; font-size:16px; color:var(--ink); line-height:1.3; }
+  .profile-card .pc-sub{ font-size:11.5px; color:var(--ink-soft); margin-top:3px; }
+  .profile-badges{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .profile-fields{ display:grid; grid-template-columns:1fr 1fr; gap:9px 16px; }
+  .profile-fields .pf-label{ font-size:10.5px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em; }
+  .profile-fields .pf-value{ font-size:13px; font-weight:600; color:var(--ink); }
+
+  .table-wrap{ background:var(--surface); border:1px solid var(--hairline); border-radius:16px; box-shadow:var(--shadow); overflow:hidden; }
+  .table-scroll{ overflow-x:auto; max-height:64vh; overflow-y:auto; }
+  table{ width:100%; border-collapse:collapse; font-size:13px; min-width:1100px; }
+  thead th{
+    position:sticky; top:0; z-index:2; background:#F4EEE0; color:var(--brass-deep); text-align:right;
+    font-family:'Tajawal',sans-serif; font-weight:700; font-size:11.5px; letter-spacing:.03em;
+    padding:12px 13px; border-bottom:1px solid var(--hairline-strong); cursor:pointer; user-select:none; white-space:nowrap;
+  }
+  thead th:hover{ background:#EFE6D0; }
+  thead th .arrow{ opacity:0; font-size:10px; margin-inline-start:4px; }
+  thead th.sorted .arrow{ opacity:1; }
+  tbody tr{ border-bottom:1px solid var(--hairline); transition:background .12s; }
+  tbody tr:hover{ background:#FBF7EE; }
+  tbody tr:last-child{ border-bottom:none; }
+  tbody td{ padding:10px 13px; color:var(--ink); white-space:nowrap; }
+  td.name{ font-weight:700; white-space:normal; min-width:160px; }
+  td.civil{ font-variant-numeric:tabular-nums; color:var(--ink-soft); direction:ltr; text-align:right; }
+  td.center{ text-align:center; }
+  td.datecell{ display:flex; flex-direction:column; gap:3px; align-items:flex-start; }
+
+  .badge{ display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; padding:4px 10px; border-radius:100px; white-space:nowrap; }
+  .badge::before{ content:""; width:6px; height:6px; border-radius:50%; background:currentColor; }
+  .badge.active{ background:var(--green-tint); color:var(--green); }
+  .badge.soon{ background:var(--amber-tint); color:var(--amber); }
+  .badge.expired{ background:var(--red-tint); color:var(--red); }
+  .badge.unknown{ background:var(--gray-tint); color:var(--ink-soft); }
+
+  .empty-state, .loading-state, .error-state{ padding:70px 20px; text-align:center; color:var(--ink-soft); }
+  .empty-state .icon, .loading-state .icon, .error-state .icon{ font-size:34px; margin-bottom:10px; }
+  .loading-state .icon{ animation:pulse 1.4s infinite; }
+
+  footer{ margin-top:26px; text-align:center; color:var(--ink-soft); font-size:12px; line-height:1.8; }
+
+  #gate{ position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; background:radial-gradient(1200px 600px at 100% -10%, rgba(169,121,60,.08), transparent 60%), var(--paper); padding:20px; }
+  #gate .gate-card{ background:var(--surface); border:1px solid var(--hairline-strong); border-radius:18px; box-shadow:var(--shadow); padding:36px 32px 30px; width:100%; max-width:380px; text-align:center; }
+  #gate .gate-seal{ width:64px; height:64px; margin:0 auto 16px; border:1.4px dashed var(--brass); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Tajawal',sans-serif; font-weight:900; font-size:18px; color:var(--brass-deep); }
+  #gate h2{ font-family:'Tajawal',sans-serif; font-weight:800; font-size:19px; margin:0 0 8px; color:var(--ink); }
+  #gate p{ font-size:13px; color:var(--ink-soft); margin:0 0 20px; line-height:1.6; }
+  #gate input{ width:100%; font-family:'Cairo',sans-serif; font-size:15px; padding:11px 14px; border:1px solid var(--hairline-strong); border-radius:10px; background:var(--paper); color:var(--ink); outline:none; text-align:center; letter-spacing:.08em; margin-bottom:12px; }
+  #gate input:focus{ border-color:var(--brass); box-shadow:0 0 0 3px var(--brass-tint); }
+  #gate button{ width:100%; font-family:'Cairo',sans-serif; font-weight:700; font-size:14.5px; padding:11px; border:none; border-radius:10px; cursor:pointer; background:var(--brass); color:#fff; }
+  #gate button:hover{ background:var(--brass-deep); }
+  #gate .gate-error{ color:var(--red); font-size:12.5px; font-weight:700; margin-top:10px; min-height:16px; }
+  #app-content{ display:none; }
+
+  .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; font-size:13.5px; font-weight:600; padding:12px 20px; border-radius:10px; z-index:200; box-shadow:0 8px 24px rgba(0,0,0,.25); opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; max-width:90vw; text-align:center; }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(-6px); }
+
+  @media (max-width: 900px){
+    .stats{ grid-template-columns:repeat(2,1fr); }
+    header.top{ flex-direction:column; }
+    .seal{ align-self:flex-end; margin-top:-10px; }
+    .af-grid{ grid-template-columns:1fr 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-card">
+    <div class="gate-seal">CS</div>
+    <h2>كونكورد سكاي</h2>
+    <p>أهلاً بك في كشف العمالة بالمواقع. أدخل كلمة المرور للمتابعة إلى بيانات فريقنا.</p>
+    <input id="gate-input" type="password" placeholder="كلمة المرور" autocomplete="off">
+    <button id="gate-btn">دخول</button>
+    <div class="gate-error" id="gate-error"></div>
+  </div>
+</div>
+
+<div id="app-content">
+
+<header class="top">
+  <div class="titleblock">
+    <div class="eyebrow">سجل تراخيص العمل والإقامة</div>
+    <h1>كشف العمالة بالمواقع</h1>
+    <p class="sub">كونكورد سكاي — متابعة حية لبيانات العمالة: الإقامات، تصاريح العمل، الجوازات، مرتبطة مباشرة بجوجل شيتس.</p>
+  </div>
+  <div class="seal" aria-hidden="true">
+    <svg viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="56" fill="none" stroke="#A9793C" stroke-width="1.4" stroke-dasharray="2 4"/>
+      <circle cx="60" cy="60" r="47" fill="none" stroke="#A9793C" stroke-width="1"/>
+      <path id="ringPath" d="M 60,60 m -38,0 a 38,38 0 1,1 76,0 a 38,38 0 1,1 -76,0" fill="none"/>
+      <text font-size="9.3" fill="#8A5F2A" letter-spacing="2">
+        <textPath href="#ringPath" startOffset="2%">تتبّع · دقّة · امتثال · متابعة ·</textPath>
+      </text>
+      <text x="60" y="56" text-anchor="middle" font-size="20" fill="#8A5F2A" font-family="Tajawal" font-weight="900">CS</text>
+      <text x="60" y="72" text-anchor="middle" font-size="7.5" fill="#8A5F2A" font-family="Tajawal" font-weight="700" letter-spacing="1">2026</text>
+    </svg>
+  </div>
+</header>
+
+<main>
+  <span class="live-pill" id="live-pill"><span class="dot"></span> جاري الاتصال بجوجل شيتس…</span>
+
+  <section class="stats" id="stats"></section>
+
+  <div class="accordion" id="accordion">
+    <div class="accordion-head" id="accordion-head">
+      <div class="plus">+</div>
+      <div class="ah-text">
+        <b>إضافة عامل جديد</b>
+        <span>اضغط هنا لإدخال بيانات عامل جديد وإضافته فورًا للجدول والإحصائيات</span>
+      </div>
+    </div>
+    <div class="accordion-body">
+      <form class="accordion-form" id="add-form">
+        <div class="af-grid">
+          <div class="af-field full">
+            <label>اسم العامل بالكامل <span class="req">*</span></label>
+            <input type="text" id="af-name" required>
+          </div>
+          <div class="af-field">
+            <label>الوظيفة</label>
+            <input type="text" id="af-job" list="af-job-list">
+            <datalist id="af-job-list"></datalist>
+          </div>
+          <div class="af-field">
+            <label>الرقم المدني <span class="req">*</span></label>
+            <input type="text" id="af-civil" inputmode="numeric" required>
+          </div>
+          <div class="af-field">
+            <label>الجنسية</label>
+            <input type="text" id="af-nat" list="af-nat-list">
+            <datalist id="af-nat-list"></datalist>
+          </div>
+          <div class="af-field">
+            <label>اسم الشركة</label>
+            <input type="text" id="af-company" list="af-company-list">
+            <datalist id="af-company-list"></datalist>
+          </div>
+          <div class="af-field">
+            <label>تاريخ التعيين</label>
+            <input type="date" id="af-hire">
+          </div>
+          <div class="af-field">
+            <label>نهاية إذن العمل</label>
+            <input type="date" id="af-permit">
+          </div>
+          <div class="af-field">
+            <label>انتهاء الإقامة</label>
+            <input type="date" id="af-residency">
+          </div>
+          <div class="af-field">
+            <label>انتهاء الجواز</label>
+            <input type="date" id="af-passport">
+          </div>
+        </div>
+        <div class="af-actions">
+          <button type="submit" class="af-submit" id="af-submit-btn">حفظ العامل</button>
+          <span class="af-error" id="af-error"></span>
+          <span class="af-success" id="af-success"></span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <section class="filters">
+    <div class="row">
+      <div class="field search">
+        <label for="f-search">بحث بالاسم أو الرقم المدني</label>
+        <input id="f-search" type="text" placeholder="اكتب اسم العامل أو الرقم المدني…" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="f-nat">الجنسية</label>
+        <select id="f-nat"><option value="">كل الجنسيات</option></select>
+      </div>
+      <div class="field">
+        <label for="f-job">الوظيفة</label>
+        <select id="f-job"><option value="">كل المهن</option></select>
+      </div>
+      <div class="field">
+        <label for="f-company">اسم الشركة</label>
+        <select id="f-company"><option value="">كل الشركات</option></select>
+      </div>
+      <div class="field">
+        <label for="f-permit">حالة تصريح العمل</label>
+        <select id="f-permit">
+          <option value="">كل الحالات</option>
+          <option value="active">سارٍ</option>
+          <option value="soon">قريب الانتهاء</option>
+          <option value="expired">منتهٍ</option>
+          <option value="unknown">غير محدد</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-residency">حالة الإقامة</label>
+        <select id="f-residency">
+          <option value="">كل الحالات</option>
+          <option value="active">سارٍ</option>
+          <option value="soon">قريبة الانتهاء</option>
+          <option value="expired">منتهية</option>
+          <option value="unknown">غير محدد</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-passport">حالة الجواز</label>
+        <select id="f-passport">
+          <option value="">كل الحالات</option>
+          <option value="active">سارٍ</option>
+          <option value="soon">قريب الانتهاء</option>
+          <option value="expired">منتهٍ</option>
+          <option value="unknown">غير محدد</option>
+        </select>
+      </div>
+      <button class="reset-btn" id="reset-btn">إعادة تعيين الفلاتر</button>
+      <button class="download-btn" id="refresh-btn">↻ تحديث من الشيت</button>
+    </div>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="profile-panel" id="profile-panel">
+    <p class="heading">كل البيانات المتعلقة بهذا الاسم</p>
+    <div class="profile-grid" id="profile-grid"></div>
+  </section>
+
+  <p class="result-count" id="result-count"></p>
+
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table id="data-table" style="display:none;">
+        <thead>
+          <tr>
+            <th data-key="idx">م<span class="arrow">▾</span></th>
+            <th data-key="name">الاسم<span class="arrow">▾</span></th>
+            <th data-key="civil_id">الرقم المدني<span class="arrow">▾</span></th>
+            <th data-key="job">الوظيفة<span class="arrow">▾</span></th>
+            <th data-key="nationality">الجنسية<span class="arrow">▾</span></th>
+            <th data-key="company">اسم الشركة<span class="arrow">▾</span></th>
+            <th data-key="hire_date">تاريخ التعيين<span class="arrow">▾</span></th>
+            <th data-key="permit_expiry">تصريح العمل<span class="arrow">▾</span></th>
+            <th data-key="residency_expiry">الإقامة<span class="arrow">▾</span></th>
+            <th data-key="passport_expiry">الجواز<span class="arrow">▾</span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="loading-state" id="loading-state">
+      <div class="icon">⏳</div>
+      <p>جاري تحميل البيانات من جوجل شيتس…</p>
+    </div>
+    <div class="error-state" id="error-state" style="display:none;">
+      <div class="icon">⚠️</div>
+      <p id="error-msg">تعذّر الاتصال بمصدر البيانات.</p>
+    </div>
+    <div class="empty-state" id="empty-state" style="display:none;">
+      <div class="icon">🗂️</div>
+      <p>لا توجد نتائج مطابقة لعوامل التصفية الحالية.</p>
+    </div>
+  </div>
+
+  <footer>
+    البيانات متزامنة مباشرة مع Google Sheets عبر Apps Script Web App · حالة كل تاريخ محسوبة تلقائيًا (سارٍ / قريب الانتهاء خلال ٦٠ يومًا / منتهٍ) وفق تاريخ اليوم
+  </footer>
+</main>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script id="config-json" type="application/json">{"sheetUrl": "https://script.google.com/macros/s/AKfycbwuYgTYZOU1jSMHwFcjtsKVA4xbkrklChMW0ImRRLBSQTtAfhXYM2Z1C8YXcmQsapGuIA/exec"}</script>
+<script>
+(function(){
+  const CONFIG = JSON.parse(document.getElementById('config-json').textContent);
+  const SHEET_URL = CONFIG.sheetUrl;
+
+  // Exact header keys as they exist in row 1 of the Google Sheet.
+  const H = {
+    idx: "م",
+    empNo: "الرقم الوظيفي",
+    civil: "الرقم المدني2",
+    name: "الاسم",
+    nameEn: "Name",
+    jobPermit: "الوظيفة في إذن العمل",
+    job: "الوظيفة",
+    jop: "JOP",
+    nat: "الجنسية",
+    hire: "تاريخ التعيين",
+    permitEnd: "نهاية الاذن",
+    residencyEnd: "انتهاء الاقامة",
+    salaryPermit: "راتب اذن العمل",
+    salaryActual: "راتب فعلي",
+    passportEnd: "انتهاء الجواز",
+    company: "اسم الشركة",
+    fileNo: "رقم الملف",
+    civilLicense: "الرقم المدني للترخيص",
+    residencyStatus: "حالة الإقامة",
+    notes: "ملاحظات"
+  };
+
+  const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+  const SOON_DAYS = 60;
+
+  function parseAnyDate(v){
+    if(v === null || v === undefined || v === '') return null;
+    if(v instanceof Date) return isNaN(v.getTime()) ? null : v;
+    if(typeof v === 'number'){
+      // Excel/Sheets serial date fallback
+      return new Date(Date.UTC(1899,11,30) + v * 86400000);
+    }
+    const s = String(v).trim();
+    if(!s) return null;
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  function fmtDate(v){
+    const d = parseAnyDate(v);
+    if(!d) return '—';
+    return d.toLocaleDateString('en-CA'); // YYYY-MM-DD
+  }
+
+  function statusOf(v){
+    const d = parseAnyDate(v);
+    if(!d) return 'unknown';
+    const diffDays = Math.floor((d - TODAY) / 86400000);
+    if(diffDays < 0) return 'expired';
+    if(diffDays <= SOON_DAYS) return 'soon';
+    return 'active';
+  }
+
+  const STATUS_LABEL = { active:'سارٍ', soon:'قريب الانتهاء', expired:'منتهٍ', unknown:'غير محدد' };
+  const STATUS_CLASS = { active:'active', soon:'soon', expired:'expired', unknown:'unknown' };
+
+  let data = [];
+
+  function normKey(k){
+    return String(k == null ? '' : k).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  function mapRow(raw, i){
+    // Build a lookup keyed by normalized header text, so line-breaks / extra
+    // spaces inside the sheet's header cells don't break the field mapping.
+    const norm = {};
+    Object.keys(raw).forEach(k => { norm[normKey(k)] = raw[k]; });
+    function get(headerKey){ return norm[normKey(headerKey)]; }
+
+    return {
+      idx: i + 1,
+      name: (get(H.name) || '').toString().trim() || '—',
+      name_en: (get(H.nameEn) || '').toString().trim(),
+      civil_id: get(H.civil) || '',
+      emp_no: get(H.empNo) || '',
+      job: (get(H.job) || get(H.jobPermit) || 'غير محدد').toString().trim() || 'غير محدد',
+      job_permit: (get(H.jobPermit) || '').toString().trim(),
+      nationality: (get(H.nat) || 'غير محدد').toString().trim() || 'غير محدد',
+      company: (get(H.company) || 'غير محدد').toString().trim() || 'غير محدد',
+      file_no: get(H.fileNo) || '',
+      civil_license: get(H.civilLicense) || '',
+      hire_date: get(H.hire) || '',
+      permit_expiry: get(H.permitEnd) || '',
+      residency_expiry: get(H.residencyEnd) || '',
+      passport_expiry: get(H.passportEnd) || '',
+      salary_permit: get(H.salaryPermit) || '',
+      salary_actual: get(H.salaryActual) || '',
+      residency_status_raw: (get(H.residencyStatus) || '').toString().trim(),
+      notes: (get(H.notes) || '').toString().trim(),
+      permit_status: statusOf(get(H.permitEnd)),
+      residency_status: statusOf(get(H.residencyEnd)),
+      passport_status: statusOf(get(H.passportEnd)),
+      _raw: raw
+    };
+  }
+
+  // ---------- DOM refs ----------
+  const els = {
+    livePill: document.getElementById('live-pill'),
+    stats: document.getElementById('stats'),
+    search: document.getElementById('f-search'),
+    nat: document.getElementById('f-nat'),
+    job: document.getElementById('f-job'),
+    company: document.getElementById('f-company'),
+    permit: document.getElementById('f-permit'),
+    residency: document.getElementById('f-residency'),
+    passport: document.getElementById('f-passport'),
+    resetBtn: document.getElementById('reset-btn'),
+    refreshBtn: document.getElementById('refresh-btn'),
+    chips: document.getElementById('chips'),
+    resultCount: document.getElementById('result-count'),
+    table: document.getElementById('data-table'),
+    tbody: document.getElementById('tbody'),
+    loadingState: document.getElementById('loading-state'),
+    errorState: document.getElementById('error-state'),
+    errorMsg: document.getElementById('error-msg'),
+    emptyState: document.getElementById('empty-state'),
+    profilePanel: document.getElementById('profile-panel'),
+    profileGrid: document.getElementById('profile-grid'),
+    toast: document.getElementById('toast'),
+    accordion: document.getElementById('accordion'),
+    accordionHead: document.getElementById('accordion-head'),
+    addForm: document.getElementById('add-form'),
+    afName: document.getElementById('af-name'),
+    afJob: document.getElementById('af-job'),
+    afCivil: document.getElementById('af-civil'),
+    afNat: document.getElementById('af-nat'),
+    afCompany: document.getElementById('af-company'),
+    afHire: document.getElementById('af-hire'),
+    afPermit: document.getElementById('af-permit'),
+    afResidency: document.getElementById('af-residency'),
+    afPassport: document.getElementById('af-passport'),
+    afSubmitBtn: document.getElementById('af-submit-btn'),
+    afError: document.getElementById('af-error'),
+    afSuccess: document.getElementById('af-success'),
+    jobList: document.getElementById('af-job-list'),
+    natList: document.getElementById('af-nat-list'),
+    companyList: document.getElementById('af-company-list')
+  };
+
+  let state = { search:'', nat:'', job:'', company:'', permit:'', residency:'', passport:'' };
+  let sortKey = 'residency_expiry';
+  let sortDir = 1;
+
+  function showToast(msg){
+    els.toast.textContent = msg;
+    els.toast.classList.add('show');
+    setTimeout(() => els.toast.classList.remove('show'), 3200);
+  }
+
+  // ---------- Fetch from Google Sheets ----------
+  function setLive(ok, msg){
+    els.livePill.classList.toggle('err', !ok);
+    els.livePill.innerHTML = `<span class="dot"></span> ${msg}`;
+  }
+
+  async function loadData(){
+    els.loadingState.style.display = 'block';
+    els.errorState.style.display = 'none';
+    els.table.style.display = 'none';
+    setLive(true, 'جاري الاتصال بجوجل شيتس…');
+    try{
+      const res = await fetch(SHEET_URL, { method:'GET' });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const raw = await res.json();
+      if(!Array.isArray(raw)) throw new Error('شكل البيانات غير متوقع');
+      data = raw.map(mapRow);
+      setLive(true, `متصل — آخر تحديث ${new Date().toLocaleTimeString('ar-EG')}`);
+      populateFilterOptions();
+      populateDatalists();
+      els.loadingState.style.display = 'none';
+      els.table.style.display = '';
+      render();
+    } catch(err){
+      console.error(err);
+      setLive(false, 'تعذّر الاتصال بجوجل شيتس');
+      els.loadingState.style.display = 'none';
+      els.errorState.style.display = 'block';
+      els.errorMsg.textContent = 'تعذّر تحميل البيانات من الشيت. تأكد من أن رابط Apps Script منشور بصلاحية "Anyone" وحاول الضغط على "تحديث من الشيت".';
+    }
+  }
+
+  function uniqueSorted(key){
+    return [...new Set(data.map(d => d[key]).filter(v => v && v !== 'غير محدد'))].sort((a,b)=>String(a).localeCompare(String(b),'ar'));
+  }
+
+  function fillSelect(sel, values, placeholder){
+    const current = sel.value;
+    sel.innerHTML = `<option value="">${placeholder}</option>` + values.map(v => `<option value="${String(v).replace(/"/g,'&quot;')}">${v}</option>`).join('');
+    if(values.includes(current)) sel.value = current;
+  }
+
+  function populateFilterOptions(){
+    fillSelect(els.nat, uniqueSorted('nationality'), 'كل الجنسيات');
+    fillSelect(els.job, uniqueSorted('job'), 'كل المهن');
+    fillSelect(els.company, uniqueSorted('company'), 'كل الشركات');
+  }
+
+  function fillDatalist(dl, values){
+    dl.innerHTML = values.map(v => `<option value="${String(v).replace(/"/g,'&quot;')}"></option>`).join('');
+  }
+  function populateDatalists(){
+    fillDatalist(els.jobList, uniqueSorted('job'));
+    fillDatalist(els.natList, uniqueSorted('nationality'));
+    fillDatalist(els.companyList, uniqueSorted('company'));
+  }
+
+  // ---------- Events ----------
+  els.search.addEventListener('input', e => { state.search = e.target.value.trim(); render(); });
+  els.nat.addEventListener('change', e => { state.nat = e.target.value; render(); });
+  els.job.addEventListener('change', e => { state.job = e.target.value; render(); });
+  els.company.addEventListener('change', e => { state.company = e.target.value; render(); });
+  els.permit.addEventListener('change', e => { state.permit = e.target.value; render(); });
+  els.residency.addEventListener('change', e => { state.residency = e.target.value; render(); });
+  els.passport.addEventListener('change', e => { state.passport = e.target.value; render(); });
+  els.resetBtn.addEventListener('click', () => {
+    state = { search:'', nat:'', job:'', company:'', permit:'', residency:'', passport:'' };
+    els.search.value='';
+    [els.nat, els.job, els.company, els.permit, els.residency, els.passport].forEach(s => s.value = '');
+    render();
+  });
+  els.refreshBtn.addEventListener('click', loadData);
+
+  document.querySelectorAll('thead th').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.key;
+      if(sortKey === key){ sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+      document.querySelectorAll('thead th').forEach(t => { t.classList.remove('sorted'); t.querySelector('.arrow').textContent='▾'; });
+      th.classList.add('sorted');
+      th.querySelector('.arrow').textContent = sortDir === 1 ? '▾' : '▴';
+      render();
+    });
+  });
+
+  els.accordionHead.addEventListener('click', () => {
+    els.accordion.classList.toggle('open');
+  });
+
+  // ---------- Filtering / sorting ----------
+  function filtered(){
+    const s = state.search.toLowerCase();
+    return data.filter(r => {
+      if(state.nat && r.nationality !== state.nat) return false;
+      if(state.job && r.job !== state.job) return false;
+      if(state.company && r.company !== state.company) return false;
+      if(state.permit && r.permit_status !== state.permit) return false;
+      if(state.residency && r.residency_status !== state.residency) return false;
+      if(state.passport && r.passport_status !== state.passport) return false;
+      if(s){
+        const hay = (r.name + ' ' + r.civil_id + ' ' + r.name_en).toLowerCase();
+        if(!hay.includes(s)) return false;
+      }
+      return true;
+    });
+  }
+
+  function sortRows(rows){
+    const statusRank = { expired:0, soon:1, active:2, unknown:3 };
+    return rows.slice().sort((a,b) => {
+      let av = a[sortKey], bv = b[sortKey];
+      if(['permit_expiry','residency_expiry','passport_expiry','hire_date'].includes(sortKey)){
+        av = parseAnyDate(av) || new Date(0);
+        bv = parseAnyDate(bv) || new Date(0);
+      } else if(sortKey === 'civil_id' || sortKey === 'idx'){
+        av = Number(av) || 0; bv = Number(bv) || 0;
+      } else if(typeof av === 'string'){
+        return sortDir * av.localeCompare(bv, 'ar');
+      }
+      if(av < bv) return -1 * sortDir;
+      if(av > bv) return 1 * sortDir;
+      return 0;
+    });
+  }
+
+  function renderChips(){
+    const labels = {
+      search: v => `بحث: "${v}"`,
+      nat: v => `الجنسية: ${v}`,
+      job: v => `الوظيفة: ${v}`,
+      company: v => `الشركة: ${v}`,
+      permit: v => `تصريح العمل: ${STATUS_LABEL[v]}`,
+      residency: v => `الإقامة: ${STATUS_LABEL[v]}`,
+      passport: v => `الجواز: ${STATUS_LABEL[v]}`
+    };
+    const selMap = { nat: els.nat, job: els.job, company: els.company, permit: els.permit, residency: els.residency, passport: els.passport };
+    els.chips.innerHTML = '';
+    Object.keys(state).forEach(k => {
+      if(!state[k]) return;
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.innerHTML = `${labels[k](state[k])} <button aria-label="إزالة">×</button>`;
+      chip.querySelector('button').addEventListener('click', () => {
+        state[k] = '';
+        if(k === 'search') els.search.value = ''; else if(selMap[k]) selMap[k].value = '';
+        render();
+      });
+      els.chips.appendChild(chip);
+    });
+  }
+
+  function renderStats(rows){
+    const total = rows.length;
+    const nats = new Set(rows.map(r=>r.nationality)).size;
+    const residencyAlert = rows.filter(r => r.residency_status==='soon' || r.residency_status==='expired').length;
+    const passportAlert = rows.filter(r => r.passport_status==='soon' || r.passport_status==='expired').length;
+    const permitAlert = rows.filter(r => r.permit_status==='soon' || r.permit_status==='expired').length;
+    els.stats.innerHTML = `
+      <div class="stat"><div class="num">${total}</div><div class="label">إجمالي العمال (بعد الفلترة)</div></div>
+      <div class="stat"><div class="num">${nats}</div><div class="label">عدد الجنسيات</div></div>
+      <div class="stat warn"><div class="num">${permitAlert}</div><div class="label">تصاريح عمل قريبة الانتهاء أو منتهية</div></div>
+      <div class="stat alert"><div class="num">${residencyAlert}</div><div class="label">إقامات قريبة الانتهاء أو منتهية</div></div>
+      <div class="stat warn"><div class="num">${passportAlert}</div><div class="label">جوازات قريبة الانتهاء أو منتهية</div></div>
+    `;
+  }
+
+  const PROFILE_FIELDS = [
+    { key:'job', label:'الوظيفة' },
+    { key:'nationality', label:'الجنسية' },
+    { key:'company', label:'اسم الشركة' },
+    { key:'emp_no', label:'الرقم الوظيفي' },
+    { key:'file_no', label:'رقم الملف' },
+    { key:'hire_date', label:'تاريخ التعيين', date:true },
+    { key:'permit_expiry', label:'نهاية إذن العمل', date:true },
+    { key:'residency_expiry', label:'انتهاء الإقامة', date:true },
+    { key:'passport_expiry', label:'انتهاء الجواز', date:true },
+    { key:'residency_status_raw', label:'حالة الإقامة (كما بالشيت)' },
+    { key:'salary_actual', label:'الراتب الفعلي' },
+    { key:'notes', label:'ملاحظات' }
+  ];
+
+  function renderProfile(){
+    const q = state.search.trim().toLowerCase();
+    if(!q || /^\d+$/.test(q) || q.length < 2){
+      els.profilePanel.classList.remove('show');
+      els.profileGrid.innerHTML = '';
+      return;
+    }
+    const matches = data.filter(r => r.name.toLowerCase().includes(q) || (r.name_en||'').toLowerCase().includes(q));
+    if(matches.length === 0){
+      els.profilePanel.classList.remove('show');
+      els.profileGrid.innerHTML = '';
+      return;
+    }
+    const LIMIT = 8;
+    const shown = matches.slice(0, LIMIT);
+    els.profileGrid.innerHTML = shown.map(r => `
+      <div class="profile-card">
+        <div class="pc-head">
+          <div>
+            <div class="pc-name">${r.name}${r.name_en ? ' <span style="font-weight:500;color:var(--ink-soft);font-size:12px;">(' + r.name_en + ')</span>' : ''}</div>
+            <div class="pc-sub">رقم مدني: ${r.civil_id || '—'}</div>
+          </div>
+        </div>
+        <div class="profile-badges">
+          <span class="badge ${STATUS_CLASS[r.permit_status]}">تصريح عمل: ${STATUS_LABEL[r.permit_status]}</span>
+          <span class="badge ${STATUS_CLASS[r.residency_status]}">إقامة: ${STATUS_LABEL[r.residency_status]}</span>
+          <span class="badge ${STATUS_CLASS[r.passport_status]}">جواز: ${STATUS_LABEL[r.passport_status]}</span>
+        </div>
+        <div class="profile-fields">
+          ${PROFILE_FIELDS.map(f => `
+            <div class="pf">
+              <div class="pf-label">${f.label}</div>
+              <div class="pf-value">${f.date ? fmtDate(r[f.key]) : (r[f.key] || '—')}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('') + (matches.length > LIMIT ? `<div style="grid-column:1/-1;text-align:center;font-size:12.5px;color:var(--ink-soft);">و ${matches.length - LIMIT} سجل إضافي مطابق — دقّق البحث لعرضهم</div>` : '');
+    els.profilePanel.classList.add('show');
+  }
+
+  function dateCell(dateVal, status){
+    return `<div class="datecell"><span>${fmtDate(dateVal)}</span><span class="badge ${STATUS_CLASS[status]}">${STATUS_LABEL[status]}</span></div>`;
+  }
+
+  function render(){
+    const rows = sortRows(filtered());
+    renderStats(rows);
+    renderChips();
+    renderProfile();
+    els.resultCount.innerHTML = `عرض <b>${rows.length}</b> من أصل <b>${data.length}</b> سجل`;
+
+    if(rows.length === 0){
+      els.tbody.innerHTML = '';
+      els.emptyState.style.display = 'block';
+      return;
+    }
+    els.emptyState.style.display = 'none';
+
+    els.tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td class="center">${r.idx}</td>
+        <td class="name">${r.name}</td>
+        <td class="civil">${r.civil_id || '—'}</td>
+        <td>${r.job}</td>
+        <td>${r.nationality}</td>
+        <td>${r.company}</td>
+        <td>${fmtDate(r.hire_date)}</td>
+        <td>${dateCell(r.permit_expiry, r.permit_status)}</td>
+        <td>${dateCell(r.residency_expiry, r.residency_status)}</td>
+        <td>${dateCell(r.passport_expiry, r.passport_status)}</td>
+      </tr>
+    `).join('');
+  }
+
+  // ---------- Add worker (POST to Apps Script) ----------
+  els.addForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    els.afError.textContent = '';
+    els.afSuccess.textContent = '';
+
+    const name = els.afName.value.trim();
+    const civil = els.afCivil.value.trim();
+    if(!name || !civil){
+      els.afError.textContent = 'الاسم والرقم المدني حقول مطلوبة';
+      return;
+    }
+    if(!/^\d+$/.test(civil)){
+      els.afError.textContent = 'الرقم المدني يجب أن يتكوّن من أرقام فقط';
+      return;
+    }
+
+    const payload = {};
+    payload[H.name] = name;
+    payload[H.civil] = civil;
+    payload[H.job] = els.afJob.value.trim();
+    payload[H.nat] = els.afNat.value.trim();
+    payload[H.company] = els.afCompany.value.trim();
+    payload[H.hire] = els.afHire.value || '';
+    payload[H.permitEnd] = els.afPermit.value || '';
+    payload[H.residencyEnd] = els.afResidency.value || '';
+    payload[H.passportEnd] = els.afPassport.value || '';
+
+    els.afSubmitBtn.disabled = true;
+    els.afSubmitBtn.innerHTML = '<span class="spinner"></span> جاري الحفظ…';
+
+    try{
+      const res = await fetch(SHEET_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight on Apps Script
+        body: JSON.stringify(payload)
+      });
+      const json = await res.json().catch(() => ({}));
+      if(!res.ok || json.result !== 'success'){
+        throw new Error(json.error || ('HTTP ' + res.status));
+      }
+      els.afSuccess.textContent = `تمت إضافة "${name}" بنجاح`;
+      showToast(`تمت إضافة "${name}" وحفظها في جوجل شيتس`);
+      els.addForm.reset();
+      await loadData();
+      setTimeout(() => { els.accordion.classList.remove('open'); els.afSuccess.textContent=''; }, 1600);
+    } catch(err){
+      console.error(err);
+      els.afError.textContent = 'تعذّر الحفظ. تأكد من اتصال الإنترنت ومن أن رابط Apps Script صحيح، حاول مرة أخرى.';
+    } finally {
+      els.afSubmitBtn.disabled = false;
+      els.afSubmitBtn.textContent = 'حفظ العامل';
+    }
+  });
+
+  loadData();
+})();
+
+(function(){
+  const PASSWORD = "Abo Hussain";
+  const gate = document.getElementById('gate');
+  const appContent = document.getElementById('app-content');
+  const input = document.getElementById('gate-input');
+  const btn = document.getElementById('gate-btn');
+  const errorEl = document.getElementById('gate-error');
+
+  function tryUnlock(){
+    if(input.value === PASSWORD){
+      gate.style.display = 'none';
+      appContent.style.display = 'block';
+    } else {
+      errorEl.textContent = 'كلمة المرور غير صحيحة، حاول مرة أخرى';
+      input.value = '';
+      input.focus();
+    }
+  }
+  btn.addEventListener('click', tryUnlock);
+  input.addEventListener('keydown', e => { if(e.key === 'Enter') tryUnlock(); });
+  input.focus();
+})();
+
+</script>
+</body>
+</html>
